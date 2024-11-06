@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/screens/profile.dart';
+import 'package:frontend/screens/review.dart';
 
 void main() {
   runApp(MyApp());
@@ -13,7 +13,7 @@ class MyApp extends StatelessWidget {
       title: 'Library Management System',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(fontFamily: 'Open Sans'),
-      home: SafeArea(child: ProfileScreen()),
+      home: SafeArea(child: ReviewScreen()),
     );
   }
 }

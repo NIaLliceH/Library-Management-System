@@ -43,7 +43,7 @@ class _InfoState extends State<_InfoElement> {
         Text(
           widget.title,
           style: TextStyle(
-              fontSize: smallFont,
+              fontSize: smallFontSize,
               color: Color.fromRGBO(191, 189, 187, 0.8),
               fontWeight: FontWeight.bold),
         ),
@@ -61,7 +61,7 @@ class _InfoState extends State<_InfoElement> {
                 padding: EdgeInsets.fromLTRB(10, 5, 10, 5),
                 child: Text(
                   widget.content,
-                  style: TextStyle(fontSize: smallFont),
+                  style: TextStyle(fontSize: smallFontSize),
                 ),
               ),
             ),
@@ -100,7 +100,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         title: const Text(
           'Profile',
           style: TextStyle(
-            fontSize: bigFont,
+            fontSize: bigFontSize,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -147,7 +147,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           child: Text(
                             '$name #$id',
                             style: TextStyle(
-                              fontSize: 20,
+                              fontSize: titleFontSize,
                               fontWeight: FontWeight.bold,
                               color: kBase2Color,
                             ),
