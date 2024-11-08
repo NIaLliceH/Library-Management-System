@@ -33,8 +33,6 @@ router.get('/:id', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const { name, NoCopies, NoValidCopies, NoPages, AvgRate, Publisher, Description, imageUrl, copies } = req.body;
-
-    // Step 1: Create the Book
     const newBook = new Book({
       name,
       NoCopies,
@@ -62,6 +60,31 @@ router.post('/', async (req, res) => {
     }
   } catch (error) {
     res.status(400).json({ message: 'Lỗi khi thêm thông tin sách', error });
+  }
+});
+// rate book
+router.post('/:id/rate', async (req, res) => {
+  try {
+    const { rating } = req.body;
+
+    if (![1, 2, 3, 4, 5].includes(rating)) {
+      return res.status(400).json({ message: 'Đánh giá không hợp lệ' });
+    }
+
+    const book = await Book.findById(req.params.id);
+    if (!book) {
+      return res.status(404).json({ message: 'Không tìm thấy sách đánh giá' });
+    }
+    if (rating === 1) book.Rate.one += 1;
+    else if (rating === 2) book.Rate.two += 1;
+    else if (rating === 3) book.Rate.three += 1;
+    else if (rating === 4) book.Rate.four += 1;
+    else if (rating === 5) book.Rate.five += 1;
+
+    await book.save();
+    res.status(200).json({ message: 'Đánh giá thành công', AvgRate: book.AvgRate });
+  } catch (error) {
+    res.status(500).json({ message: 'Đánh giá thất bại', error });
   }
 });
 
