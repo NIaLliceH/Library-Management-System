@@ -64,7 +64,7 @@ class CategoryResult extends StatelessWidget {
                         // height: 90,
                         margin: EdgeInsets.only(right: 10),
                         child: Image.network(
-                          books[index].image,
+                          books[index].imageUrl,
                           fit: BoxFit.cover,
                         ),
                     ),
