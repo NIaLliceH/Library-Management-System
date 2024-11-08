@@ -1,8 +1,10 @@
-import 'package:frontend/book.dart';
+import 'package:frontend/models/book.dart';
 import 'package:frontend/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+
+import 'category_result.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -16,7 +18,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        padding: EdgeInsets.all(25),
+        padding: EdgeInsets.only(left: 25, right: 25, top: 25),
         child: ListView(
           physics: BouncingScrollPhysics(),
           children: [
@@ -32,7 +34,7 @@ class _HomePageState extends State<HomePage> {
                       color: Colors.grey),
                 ),
                 Text(
-                  'Discover Latest Books',
+                  'Welcome back!',
                   style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w700,
@@ -81,60 +83,50 @@ class _HomePageState extends State<HomePage> {
             ),
             // Tab bar
             Container(
-              // color: Colors.green,
-              margin: EdgeInsets.only(top: 30),
-              height: 30,
+              margin: EdgeInsets.only(top: 20),
+              height: 300,
               child: DefaultTabController(
                 length: 3,
-                child: TabBar(
-                    labelPadding: EdgeInsets.only(right: 30),
-                    indicatorPadding: EdgeInsets.only(right: 20),
-                    tabAlignment: TabAlignment.start,
-                    isScrollable: true,
-                    labelColor: kBase3Color,
-                    labelStyle:
-                        TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
-                    unselectedLabelColor: Colors.grey,
-                    unselectedLabelStyle:
-                        TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
-                    tabs: [
-                      Tab(
-                        child: Text('New'),
-                      ),
-                      Tab(
-                        child: Text('Trending'),
-                      ),
-                      Tab(
-                        child: Text('Best Seller'),
+                child: Column(
+                  children: [
+                    TabBar(
+                        labelPadding: EdgeInsets.only(right: 30),
+                        indicatorPadding: EdgeInsets.only(right: 20),
+                        tabAlignment: TabAlignment.start,
+                        isScrollable: true,
+                        labelColor: kBase3Color,
+                        labelStyle:
+                            TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+                        unselectedLabelColor: Colors.grey,
+                        unselectedLabelStyle:
+                            TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
+                        tabs: [
+                          Tab(
+                            child: Text('New'),
+                          ),
+                          Tab(
+                            child: Text('Top Rated'),
+                          ),
+                          Tab(
+                            child: Text('Most Borrowed'),
+                          )
+                        ]),
+                    Expanded(
+                      child: TabBarView(
+                        children: [
+                          BookListView(bookList: newBooks),
+                          BookListView(bookList: topRatedBooks),
+                          BookListView(bookList: mostBorrowedBooks),
+                        ],
                       )
-                    ]),
+                    )
+                  ],
+                ),
               ),
             ),
-            // Tab list view
-            Container(
-              margin: EdgeInsets.only(top: 20, bottom: 20),
-              // color: Colors.green,
-              height: 230,
-              child: ListView.builder(
-                itemCount: newBooks.length,
-                physics: BouncingScrollPhysics(),
-                scrollDirection: Axis.horizontal,
-                itemBuilder: (context, index) {
-                  return Container(
-                      width: 160,
-                      margin: EdgeInsets.only(right: 15),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        image: DecorationImage(
-                            fit: BoxFit.cover,
-                            image: AssetImage(newBooks[index].image)),
-                      ));
-                },
-              ),
-            ),
-            // Popular view
+            // Category list
             Text(
-              'Popular',
+              'Category',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
@@ -142,66 +134,47 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             ListView.builder(
-              padding: EdgeInsets.only(top: 20),
+              padding: EdgeInsets.only(top: 10),
               physics: BouncingScrollPhysics(),
               // scrollDirection: Axis.vertical,
               shrinkWrap: true, // because no wrapping Container to set height
-              itemCount: popularBooks.length,
+              itemCount: categories.length,
               itemBuilder: (context, index) {
-                return GestureDetector(
-                  onTap: () {
-                    print('ListView tapped');
-                  },
-                  child: Container(
-                    height: 100,
-                    margin: EdgeInsets.only(bottom: 15),
-                    child: Row(
-                      children: [
-                        // book cover
-                        Expanded(
-                          flex: 1,
-                          child: Container(
-                              margin: EdgeInsets.only(right: 20),
-                              decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(5),
-                                  image: DecorationImage(
-                                      fit: BoxFit.cover,
-                                      image: AssetImage(
-                                          popularBooks[index].image)
-                                  )
-                              )
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 5),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => CategoryResult(
+                            category: categories[index],
                           ),
                         ),
-                        // book info
-                        Expanded(
-                          flex: 3,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              Text(
-                                popularBooks[index].title,
-                                style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w700,
-                                    color: kBase4Color
-                                ),
-                              ),
-                              Text(popularBooks[index].author,
-                                  style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w300)
-                              ),
-                              Text(
-                                '\$${popularBooks[index].price}',
-                                style: TextStyle(
-                                    fontSize: 13,
-                                    color: kBase3Color,
-                                    fontStyle: FontStyle.italic),
-                              )
-                            ],
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                      alignment: Alignment.centerLeft,
+                      backgroundColor: kBase2Color,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          categories[index],
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: kBase3Color,
                           ),
-                        )
+                        ),
+                        Icon(
+                          Icons.arrow_forward_ios_rounded,
+                          color: kBase1Color,
+                        ),
                       ],
                     ),
                   ),
@@ -210,6 +183,37 @@ class _HomePageState extends State<HomePage> {
             )
           ],
         ),
+      ),
+    );
+  }
+}
+
+// Book list view (new, top rated, most borrowed)
+class BookListView extends StatelessWidget {
+  final List<Book> bookList;
+
+  const BookListView({super.key, required this.bookList});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.only(top: 20, bottom: 20),
+      height: 230,
+      child: ListView.builder(
+        itemCount: bookList.length,
+        physics: BouncingScrollPhysics(),
+        scrollDirection: Axis.horizontal,
+        itemBuilder: (context, index) {
+          return Container(
+              width: 160,
+              margin: EdgeInsets.only(right: 15),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                image: DecorationImage(
+                    fit: BoxFit.cover,
+                    image: AssetImage(bookList[index].image)),
+              ));
+        },
       ),
     );
   }
