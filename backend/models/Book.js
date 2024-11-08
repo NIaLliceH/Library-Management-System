@@ -9,6 +9,7 @@ const bookSchema = new mongoose.Schema({
   AvgRate: String,
   Publisher: String,
   Description: String,
+  imageUrl: String,
 });
 
 module.exports = mongoose.model('Book', bookSchema);
