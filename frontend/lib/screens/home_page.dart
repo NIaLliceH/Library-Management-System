@@ -211,7 +211,7 @@ class BookListView extends StatelessWidget {
                 borderRadius: BorderRadius.circular(10),
                 image: DecorationImage(
                     fit: BoxFit.cover,
-                    image: AssetImage(bookList[index].image)),
+                    image: AssetImage(bookList[index].imageUrl)),
               ));
         },
       ),
