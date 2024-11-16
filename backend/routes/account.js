@@ -4,36 +4,37 @@ const Account = require('../models/Account'); // Import the Account model
 const User = require('../models/User');       // Import User model
 const Student = require('../models/Student')    // Import student model
 const Admin = require('../models/Admin');
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
+// const bcrypt = require('bcrypt');
+// const jwt = require('jsonwebtoken');
 
-const JWT_SECRET = 'httt'; // Thay bằng khóa bí mật của bạn
+// const JWT_SECRET = 'httt'; // Thay bằng khóa bí mật của bạn
 
 
 router.post('/signup', async (req, res) => {
   try {
     const {email, password, role, status, nam, gen, addr, ava, jod, mssv, dob, fac, numwa, job_des} = req.body;
 
-    //Kiem tra xem email da ton tai hay chua
+    // Kiểm tra xem email đã tồn tại hay chưa
     const existingUser = await Account.findOne({ Email: email });
     if (existingUser) {
-        return res.status(400).json({message: 'Email da ton tai'});
+      return res.status(400).json({ message: 'Email đã tồn tại' });
     }
 
-    //Hash password
-    //const hashedPassword = await bcrypt.hash(password,  10);
+    // Hash password
+    // const bcrypt = require('bcryptjs');
+    // const hashedPassword = await bcrypt.hash(password, 10); // Mã hóa mật khẩu
 
-    //create a new user
+    // Tạo tài khoản mới
     const newAccount = new Account({
-        Email: email, 
-        Password: password,
-        Use_Role: role,   //role is student/admin
-        Status: status,         //status is on/off
+      Email: email, 
+      Password: password, // Dùng mật khẩu đã mã hóa
+      Use_Role: role,   // role là student/admin
+      Status: status,   // status là on/off
     });
 
-
     const savedAccount = await newAccount.save();
-    //Hien thuc voi user 
+
+    // Tạo người dùng
     const newUser = new User({
       name: nam,
       gender: gen,
@@ -45,8 +46,9 @@ router.post('/signup', async (req, res) => {
     });
 
     const savedUser = await newUser.save();
-    //Hien thuc voi Student/Admin
-    if (role == 'student') {
+
+    // Xử lý theo role
+    if (role === 'student') {
       const newStudent = new Student({
         MSSV: mssv,
         dob: dob,
@@ -55,21 +57,22 @@ router.post('/signup', async (req, res) => {
         ID: savedUser.ID_user,
       });
       await newStudent.save();
-    }
-    else if (role == 'admin') {
+    } else if (role === 'admin') {
       const newAdmin = new Admin({
         job_description: job_des,
         ID: savedUser.ID_user,
       });
       await newAdmin.save();
+    } else {
+      return res.status(400).json({ message: 'Role không hợp lệ' });
     }
 
-
-    res.status(201).json({message: 'Dang ki thanh cong'});
+    res.status(201).json({ message: 'Đăng ký thành công' });
   } catch (error) {
-    res.status(500).json({ message: 'Lỗi khi đăng kí', error });
+    res.status(500).json({ message: 'Lỗi khi đăng ký', error: error.message });
   }
 });
+
 
 
 router.post('/login', async (req, res) => {
