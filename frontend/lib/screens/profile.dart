@@ -7,12 +7,12 @@ class InvertedCornerClipper extends CustomClipper<Path> {
   Path getClip(Size size) {
     Path path = Path();
     path.moveTo(0, 0);
-    path.lineTo(0, size.height);
+    path.lineTo(0, size.height - 50);
     path.quadraticBezierTo(
       size.width / 2,
-      size.height - 50,
-      size.width,
       size.height,
+      size.width,
+      size.height - 50,
     );
     path.lineTo(size.width, 0);
     path.lineTo(0, 0);
@@ -29,7 +29,8 @@ class InvertedCornerClipper extends CustomClipper<Path> {
 // info
 class _InfoElement extends StatefulWidget {
   final String title, content;
-  const _InfoElement(this.title, this.content);
+  final bool finalLine;
+  const _InfoElement(this.title, this.content, {this.finalLine = false});
   @override
   State<StatefulWidget> createState() => _InfoState();
 }
@@ -40,28 +41,35 @@ class _InfoState extends State<_InfoElement> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          widget.title,
-          style: TextStyle(
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: Text(
+            widget.title,
+            style: TextStyle(
               fontSize: smallFontSize,
-              color: Color.fromRGBO(191, 189, 187, 0.8),
-              fontWeight: FontWeight.bold),
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ),
         SizedBox(height: 3),
         Row(children: [
           Expanded(
             child: Container(
-              decoration: BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(width: 1, color: kBase5Color),
-                ),
-                // borderRadius: BorderRadius.circular(10),
-              ),
+              decoration: widget.finalLine
+                  ? null
+                  : BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(width: 1, color: kBase5Color),
+                      ),
+                    ),
               child: Padding(
-                padding: EdgeInsets.fromLTRB(10, 5, 10, 5),
+                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 2),
                 child: Text(
                   widget.content,
-                  style: TextStyle(fontSize: smallFontSize),
+                  style: TextStyle(
+                    fontSize: smallFontSize,
+                    fontWeight: FontWeight.w400,
+                  ),
                 ),
               ),
             ),
@@ -92,6 +100,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     double screensize = MediaQuery.of(context).size.width;
     return Scaffold(
+      backgroundColor: const Color.fromRGBO(247, 247, 247, 1),
       appBar: AppBar(
         backgroundColor: kBase2Color,
         leading: IconButton(
@@ -112,8 +121,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
             clipper: InvertedCornerClipper(),
             child: Container(
               width: screensize,
-              height: 120,
-              color: kBase2Color,
+              height: 50,
+              color: const Color.fromRGBO(127, 199, 217, 1),
+            ),
+          ),
+          ClipPath(
+            clipper: InvertedCornerClipper(),
+            child: Container(
+              width: screensize,
+              height: 80,
+              color: const Color.fromRGBO(127, 199, 217, 0.7),
+            ),
+          ),
+          ClipPath(
+            clipper: InvertedCornerClipper(),
+            child: Container(
+              width: screensize,
+              height: 110,
+              color: const Color.fromRGBO(127, 199, 217, 0.5),
             ),
           ),
           SingleChildScrollView(
@@ -122,11 +147,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: <Widget>[
-                  SizedBox(height: 20),
+                  // SizedBox(height: 5),
                   Container(
                     padding: EdgeInsets.all(3),
                     decoration: BoxDecoration(
-                        shape: BoxShape.circle, color: Colors.white),
+                        shape: BoxShape.circle, color: kBase3Color),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(80),
                       child: Image.network(
@@ -139,29 +164,54 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   Container(
                     width: screensize,
-                    margin: EdgeInsets.only(top: 10, left: 30, right: 30),
+                    margin: EdgeInsets.only(top: 10, left: 25, right: 25),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Center(
                           child: Text(
-                            '$name #$id',
+                            'Hi, $name',
                             style: TextStyle(
                               fontSize: titleFontSize,
                               fontWeight: FontWeight.bold,
-                              color: kBase2Color,
+                              color: kBase3Color,
+                            ),
+                          ),
+                        ),
+                        Center(
+                          child: Text(
+                            '#$id',
+                            style: TextStyle(
+                              fontSize: bigFontSize,
+                              fontWeight: FontWeight.bold,
+                              color: kBase3Color,
                             ),
                           ),
                         ),
                         SizedBox(height: 10),
-                        _InfoElement("Department", department),
-                        SizedBox(height: 10),
-                        _InfoElement("Date of birth", dob),
-                        SizedBox(height: 10),
-                        _InfoElement("Gender", gender),
-                        SizedBox(height: 10),
-                        _InfoElement("Join date", joinDate),
-                        SizedBox(height: 10),
+                        Container(
+                          width: screensize - 50,
+                          padding: EdgeInsets.symmetric(vertical: 10),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(7),
+                            color: Colors.white,
+                          ),
+                          child: Column(
+                            children: [
+                              _InfoElement("Department", department),
+                              SizedBox(height: 10),
+                              _InfoElement("Date of birth", dob),
+                              SizedBox(height: 10),
+                              _InfoElement("Gender", gender),
+                              SizedBox(height: 10),
+                              _InfoElement(
+                                "Join date",
+                                joinDate,
+                                finalLine: true,
+                              ),
+                            ],
+                          ),
+                        )
                       ],
                     ),
                   ),
