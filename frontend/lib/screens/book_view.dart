@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/models/book.dart';
 import 'package:frontend/api_service.dart';
 import 'package:frontend/screens/issue_form.dart';
-
-import '../constants.dart';
+import 'package:frontend/utils.dart';
+import 'package:frontend/constants.dart';
 
 class BookView extends StatelessWidget {
-  final Book book;
-
-  const BookView({super.key, required this.book});
+  final String bookId;
+  const BookView({super.key, required this.bookId});
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +30,7 @@ class BookView extends StatelessWidget {
           ),
         ),
         body: FutureBuilder(
-          future: ApiService.getBookById('672d8ef58b1e31655e4df5c2'),
+          future: ApiService.getBookById(bookId),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return Center(
@@ -51,47 +49,54 @@ class BookView extends StatelessWidget {
             }
             else {
               final book = snapshot.data!;
-              return SingleChildScrollView(
-                padding: EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Center(
-                      child: Image.network(
-                        book.imageUrl,
-                        fit: BoxFit.cover,
-                        height: 300,
-                      ),
+              return Stack(
+                children: [
+                  SingleChildScrollView(
+                    padding: EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Center(
+                          child: Image.network(
+                            book.imageUrl,
+                            fit: BoxFit.cover,
+                            height: 300,
+                          ),
+                        ),
+                        displayBookInfo('Title', book.title),
+                        displayBookInfo('Author', book.author),
+                        displayBookInfo('Category', book.category),
+                        displayBookInfo('Publisher', book.publisher),
+                        displayBookInfo('Available', '${book.availableCopies} / ${book.noOfCopies} copies'),
+                        displayBookInfo('No of Pages', book.noOfPages.toString()),
+                        displayBookInfo('Rating', '${book.rating} / 5'),
+                        displayBookInfo('Description', book.description),
+                      ],
                     ),
-                    buildBookInfo('Title', book.title),
-                    buildBookInfo('Author', book.author),
-                    buildBookInfo('Category', book.category),
-                    buildBookInfo('Publisher', book.publisher),
-                    buildBookInfo('Available', '${book.availableCopies} / ${book.noOfCopies} copies'),
-                    buildBookInfo('No of Pages', book.noOfPages.toString()),
-                    buildBookInfo('Rating', '${book.rating} / 5'),
-                    buildBookInfo('Description', book.description),
-                  ],
-                ),
+                  ),
+                  Align(
+                    alignment: Alignment.bottomCenter,
+                    child: FloatingActionButton.extended(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => IssueForm(bookId: book.id),
+                          ),
+                        );
+                      },
+                      label: Text('Issue this book'),
+                    ),
+                  )
+                ],
               );
             }
           }
         ),
-        floatingActionButton: FloatingActionButton.extended(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => IssueForm(bookId: book.id),
-              ),
-            );
-          },
-          label: Text('Issue this book'),
-        ),
     );
   }
 
-  Widget buildBookInfo(String label, String value) {
+  Widget displayBookInfo(String label, dynamic value) {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 5),
       child: Row(
@@ -106,7 +111,7 @@ class BookView extends StatelessWidget {
           ),
           Expanded(
             child: Text(
-              value,
+              Utils.processDisplayValue(value),
               style: TextStyle(
                 fontSize: 16,
               ),

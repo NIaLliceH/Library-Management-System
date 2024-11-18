@@ -1,8 +1,8 @@
 class Book {
   final String id;
   final String title;
-  final String author;
-  final String category;
+  final List<String> author;
+  final List<String> category;
   final String imageUrl;
   final int noOfCopies;
   final int availableCopies;
@@ -12,234 +12,33 @@ class Book {
   final String description;
 
   Book({
-    this.id = 'N/A',
+    required this.id,
     required this.title,
     required this.author,
     required this.category,
     required this.imageUrl,
-    this.noOfCopies = -1,
-    this.availableCopies = -1,
-    this.noOfPages = -1,
-    this.rating = -1,
-    this.publisher = 'N/A',
-    this.description = 'N/A',
+    required this.noOfCopies,
+    required this.availableCopies,
+    required this.noOfPages,
+    required this.rating,
+    required this.publisher,
+    required this.description,
   });
 
   factory Book.fromJson(Map<String, dynamic> json) {
     return Book(
       id: json['_id'],
       title: json['name'],
-      noOfCopies: int.parse(json['NoCopies']),
-      availableCopies: int.parse(json['NoValidCopies']),
-      noOfPages: int.parse(json['NoPages']),
-      rating: double.parse(json['AvgRate']),
-      publisher: json['Publisher'],
-      description: json['Description'],
+      noOfCopies: int.parse(json['NoCopies']) ?? -1,
+      availableCopies: int.parse(json['NoValidCopies']) ?? -1,
+      noOfPages: int.parse(json['NoPages']) ?? -1,
+      rating: double.parse(json['AvgRate']) ?? -1,
+      publisher: json['Publisher'] ?? 'N/A',
+      description: json['Description'] ?? 'N/A',
       imageUrl: json['imageUrl'] ??
-          'https://drive.google.com/uc?export=view&id=1wOuHRLI_dIdiuNnv1XYcm3aDERsZVN0w',
-      author: json['Author'] ?? 'Unknown',
-      category: json['Category'] ?? 'Unknown',
+          'https://drive.google.com/uc?export=view&id=1oxjzdaMKjybjbwoduSXd9mGGJDPTcJD6', // placeholder image
+      author: json['Author'] ?? 'N/A',
+      category: json['Category'] ?? 'N/A',
     );
   }
 }
-
-
-List<Book> newBooks = [
-  Book(
-      title: "Book 1",
-      imageUrl: "assets/imageUrls/book1.jpg",
-      author: 'Alicia Browns',
-      availableCopies: 5,
-      category: 'Science'),
-  Book(
-      title: "Book 1",
-      imageUrl: "assets/imageUrls/book1.jpg",
-      author: 'Alicia Browns',
-      availableCopies: 5,
-      category: 'Science'),
-  Book(
-      title: "Book 1",
-      imageUrl: "assets/imageUrls/book1.jpg",
-      author: 'Alicia Browns',
-      availableCopies: 5,
-      category: 'Science'),
-];
-
- List<Book> scienceCategory = [
-  Book(
-      title: "This is a very long book title that will be cut off This is a very long book",
-      imageUrl: "https://drive.google.com/uc?export=view&id=1wOuHRLI_dIdiuNnv1XYcm3aDERsZVN0w",
-      author: 'Alicia Browns',
-      availableCopies: 0,
-      category: 'Science'),
-  Book(
-      title: "Book 1",
-      imageUrl: "https://drive.google.com/uc?export=view&id=1wOuHRLI_dIdiuNnv1XYcm3aDERsZVN0w",
-      author: 'Alicia Browns',
-      availableCopies: 5,
-      category: 'Science'),
-  Book(
-      title: "Book 1",
-      imageUrl: "https://drive.google.com/uc?export=view&id=1wOuHRLI_dIdiuNnv1XYcm3aDERsZVN0w",
-      author: 'Alicia Browns',
-      availableCopies: 1,
-      category: 'Science'),
-  Book(
-      title: "This is a very long book title that will be cut off",
-      imageUrl: "https://drive.google.com/uc?export=view&id=1wOuHRLI_dIdiuNnv1XYcm3aDERsZVN0w",
-      author: 'Alicia Browns',
-      availableCopies: 0,
-      category: 'Science'),
-];
-
-List<Book> artCategory = [
-  Book(
-      title: "This is a very long book title that will be cut off This is a very long book",
-      imageUrl: "https://drive.google.com/uc?export=view&id=1wOuHRLI_dIdiuNnv1XYcm3aDERsZVN0w",
-      author: 'Alicia Browns',
-      availableCopies: 0,
-      category: 'Science'),
-  Book(
-      title: "Book 1",
-      imageUrl: "https://drive.google.com/uc?export=view&id=1wOuHRLI_dIdiuNnv1XYcm3aDERsZVN0w",
-      author: 'Alicia Browns',
-      availableCopies: 5,
-      category: 'Science'),
-  Book(
-      title: "Book 1",
-      imageUrl: "https://drive.google.com/uc?export=view&id=1wOuHRLI_dIdiuNnv1XYcm3aDERsZVN0w",
-      author: 'Alicia Browns',
-      availableCopies: 1,
-      category: 'Science'),
-];
-
-List<Book> computerCategory = [
-  Book(
-      title: "This is a very long book title that will be cut off This is a very long book",
-      imageUrl: "https://drive.google.com/uc?export=view&id=1wOuHRLI_dIdiuNnv1XYcm3aDERsZVN0w",
-      author: 'Alicia Browns',
-      availableCopies: 0,
-      category: 'Science'),
-  Book(
-      title: "Book 1",
-      imageUrl: "https://drive.google.com/uc?export=view&id=1wOuHRLI_dIdiuNnv1XYcm3aDERsZVN0w",
-      author: 'Alicia Browns',
-      availableCopies: 5,
-      category: 'Science'),
-  Book(
-      title: "Book 1",
-      imageUrl: "https://drive.google.com/uc?export=view&id=1wOuHRLI_dIdiuNnv1XYcm3aDERsZVN0w",
-      author: 'Alicia Browns',
-      availableCopies: 1,
-      category: 'Science'),
-  Book(
-      title: "This is a very long book title that will be cut off",
-      imageUrl: "https://drive.google.com/uc?export=view&id=1wOuHRLI_dIdiuNnv1XYcm3aDERsZVN0w",
-      author: 'Alicia Browns',
-      availableCopies: 0,
-      category: 'Science'),
-];
-
-List<Book> topRatedBooks = [
-  Book(
-      title: "Book 1",
-      imageUrl: "assets/imageUrls/book1.jpg",
-      author: 'Alicia Browns',
-      availableCopies: 5,
-      category: 'Science'),
-  Book(
-      title: "Book 1",
-      imageUrl: "assets/imageUrls/book1.jpg",
-      author: 'Alicia Browns',
-      availableCopies: 5,
-      category: 'Science'),
-  Book(
-      title: "Book 1",
-      imageUrl: "assets/imageUrls/book1.jpg",
-      author: 'Alicia Browns',
-      availableCopies: 5,
-      category: 'Science'),
-];
-
-List<Book> mostBorrowedBooks = [
-  Book(
-      title: "Book 1",
-      imageUrl: "assets/imageUrls/book1.jpg",
-      author: 'Alicia Browns',
-      availableCopies: 5,
-      category: 'Science'),
-  Book(
-      title: "Book 1",
-      imageUrl: "assets/imageUrls/book1.jpg",
-      author: 'Alicia Browns',
-      availableCopies: 5,
-      category: 'Science'),
-  Book(
-      title: "Book 1",
-      imageUrl: "assets/imageUrls/book1.jpg",
-      author: 'Alicia Browns',
-      availableCopies: 5,
-      category: 'Science'),
-];
-
-List<Book> popularBooks = [
-  Book(
-      title: "Book 1",
-      imageUrl: "assets/imageUrls/book1.jpg",
-      author: 'Alicia Browns',
-      availableCopies: 5,
-      category: 'Science'),
-  Book(
-      title: "Book 1",
-      imageUrl: "assets/imageUrls/book1.jpg",
-      author: 'Alicia Browns',
-      availableCopies: 5,
-      category: 'Science'),
-  Book(
-      title: "Book 1",
-      imageUrl: "assets/imageUrls/book1.jpg",
-      author: 'Alicia Browns',
-      availableCopies: 5,
-      category: 'Science'),
-];
-
-List<Book> thesisBooks = [
-  Book(
-      title: "This is a very long book title that will be cut off This is a very long book",
-      imageUrl: "https://drive.google.com/uc?export=view&id=1wOuHRLI_dIdiuNnv1XYcm3aDERsZVN0w",
-      author: 'Alicia Browns',
-      availableCopies: 0,
-      category: 'Science'),
-  Book(
-      title: "Book 1",
-      imageUrl: "https://drive.google.com/uc?export=view&id=1wOuHRLI_dIdiuNnv1XYcm3aDERsZVN0w",
-      author: 'Alicia Browns',
-      availableCopies: 5,
-      category: 'Science'),
-  Book(
-      title: "Book 1",
-      imageUrl: "https://drive.google.com/uc?export=view&id=1wOuHRLI_dIdiuNnv1XYcm3aDERsZVN0w",
-      author: 'Alicia Browns',
-      availableCopies: 1,
-      category: 'Science'),
-  Book(
-      title: "This is a very long book title that will be cut off",
-      imageUrl: "https://drive.google.com/uc?export=view&id=1wOuHRLI_dIdiuNnv1XYcm3aDERsZVN0w",
-      author: 'Alicia Browns',
-      availableCopies: 0,
-      category: 'Science'),
-];
-
-List<String> categories = [
-  'Science',
-  'Art',
-  'Computer',
-  'Thesis'
-];
-
-Map<String, List<Book>> booksByCategory = {
-  'Science': scienceCategory,
-  'Art': artCategory,
-  'Computer': computerCategory,
-  'Thesis': thesisBooks,
-};

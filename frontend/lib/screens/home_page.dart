@@ -1,9 +1,8 @@
-import 'package:frontend/models/book.dart';
 import 'package:frontend/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-
+import '../api_service.dart';
 import 'category_result.dart';
 
 class HomePage extends StatefulWidget {
@@ -114,9 +113,9 @@ class _HomePageState extends State<HomePage> {
                     Expanded(
                       child: TabBarView(
                         children: [
-                          BookListView(bookList: newBooks),
-                          BookListView(bookList: topRatedBooks),
-                          BookListView(bookList: mostBorrowedBooks),
+                          BookListView(filter: BookFilter.newRelease),
+                          BookListView(filter: BookFilter.topRated),
+                          BookListView(filter: BookFilter.mostBorrowed),
                         ],
                       )
                     )
@@ -133,52 +132,72 @@ class _HomePageState extends State<HomePage> {
                 color: Colors.black,
               ),
             ),
-            ListView.builder(
-              padding: EdgeInsets.only(top: 10),
-              physics: BouncingScrollPhysics(),
-              // scrollDirection: Axis.vertical,
-              shrinkWrap: true, // because no wrapping Container to set height
-              itemCount: categories.length,
-              itemBuilder: (context, index) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 5),
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => CategoryResult(
-                            category: categories[index],
+            FutureBuilder(
+              future: ApiService.getCategoryList(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(
+                    child: CircularProgressIndicator(),
+                  );
+                } else if (snapshot.hasError) {
+                  return Center(
+                    child: Text('Error: ${snapshot.error}'),
+                  );
+                } else if (!snapshot.hasData) {
+                  return Center(
+                    child: Text('No data available'),
+                  );
+                } else {
+                  final categories = snapshot.data!;
+                  return ListView.builder(
+                    padding: EdgeInsets.only(top: 10),
+                    physics: BouncingScrollPhysics(),
+                    // scrollDirection: Axis.vertical,
+                    shrinkWrap: true, // because no wrapping Container to set height
+                    itemCount: categories.length,
+                    itemBuilder: (context, index) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 5),
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => CategoryResult(
+                                  category: categories[index],
+                                ),
+                              ),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                            alignment: Alignment.centerLeft,
+                            backgroundColor: kBase2Color,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                categories[index],
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: kBase3Color,
+                                ),
+                              ),
+                              Icon(
+                                Icons.arrow_forward_ios_rounded,
+                                color: kBase1Color,
+                              ),
+                            ],
                           ),
                         ),
                       );
                     },
-                    style: ElevatedButton.styleFrom(
-                      padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-                      alignment: Alignment.centerLeft,
-                      backgroundColor: kBase2Color,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          categories[index],
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: kBase3Color,
-                          ),
-                        ),
-                        Icon(
-                          Icons.arrow_forward_ios_rounded,
-                          color: kBase1Color,
-                        ),
-                      ],
-                    ),
-                  ),
-                );
+                  );
+                }
               },
             )
           ],
@@ -190,31 +209,50 @@ class _HomePageState extends State<HomePage> {
 
 // Book list view (new, top rated, most borrowed)
 class BookListView extends StatelessWidget {
-  final List<Book> bookList;
-
-  const BookListView({super.key, required this.bookList});
+  final BookFilter filter;
+  const BookListView({super.key, required this.filter});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       margin: EdgeInsets.only(top: 20, bottom: 20),
       height: 230,
-      child: ListView.builder(
-        itemCount: bookList.length,
-        physics: BouncingScrollPhysics(),
-        scrollDirection: Axis.horizontal,
-        itemBuilder: (context, index) {
-          return Container(
-              width: 160,
-              margin: EdgeInsets.only(right: 15),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                image: DecorationImage(
-                    fit: BoxFit.cover,
-                    image: AssetImage(bookList[index].imageUrl)),
-              ));
+      child: FutureBuilder(
+        future: ApiService.getBooksFiltered(filter),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          } else if (snapshot.hasError) {
+            return Center(
+              child: Text('Error: ${snapshot.error}'),
+            );
+          } else if (!snapshot.hasData) {
+            return Center(
+              child: Text('No data available'),
+            );
+          } else {
+            final books = snapshot.data!;
+            return ListView.builder(
+              itemCount: books.length,
+              physics: BouncingScrollPhysics(),
+              scrollDirection: Axis.horizontal,
+              itemBuilder: (context, index) {
+                return Container(
+                    width: 160,
+                    margin: EdgeInsets.only(right: 15),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      image: DecorationImage(
+                          fit: BoxFit.cover,
+                          image: AssetImage(books[index].imageUrl)),
+                    ));
+              },
+            );
+          }
         },
-      ),
+      )
     );
   }
 }
