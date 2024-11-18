@@ -148,7 +148,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     double screensize = MediaQuery.of(context).size.width;
     return Scaffold(
-      backgroundColor: const Color.fromRGBO(247, 247, 247, 1),
       appBar: AppBar(
         backgroundColor: kBase2Color,
         leading: IconButton(
