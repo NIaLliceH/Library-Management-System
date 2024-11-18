@@ -1,6 +1,7 @@
 import 'package:frontend/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:frontend/screens/search_result.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../api_service.dart';
 import 'category_result.dart';
@@ -13,6 +14,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  String userInput = '';
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -57,6 +60,22 @@ class _HomePageState extends State<HomePage> {
                         borderRadius: BorderRadius.all(Radius.circular(20)),
                         border: Border.all(width: 1, color: Color(0x77365486))),
                     child: TextField(
+                      onChanged: (value) {
+                        setState(() {
+                          userInput = value;
+                        });
+                      },
+                      onSubmitted: (userInput) {
+                        final query = userInput.trim();
+                        if (query.isNotEmpty) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => SearchResult(query: query),
+                            ),
+                          );
+                        }
+                      },
                       style: GoogleFonts.openSans(
                           fontSize: 12,
                           color: Colors.black,
@@ -71,12 +90,26 @@ class _HomePageState extends State<HomePage> {
                   Align(
                       alignment: Alignment.centerRight,
                       child: ElevatedButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            final query = userInput.trim();
+                            if (query.isNotEmpty) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => SearchResult(query: query),
+                                ),
+                              );
+                            }
+                          },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Color(0x99365486),
                           ),
-                          child: SvgPicture.asset('assets/svg/search.svg',
-                              width: 25))),
+                          child: Icon(
+                            Icons.search,
+                            color: Colors.white,
+                          )
+                      )
+                  ),
                 ],
               ),
             ),
