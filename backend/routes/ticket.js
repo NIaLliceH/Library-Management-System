@@ -1,33 +1,60 @@
 const express = require('express');
 const router = express.Router();
 const holdTicket = require('../models/HoldTicket'); 
-const borrowTicket = require('../models/BorrowTicket')
+const borrowTicket = require('../models/BorrowTicket');
+const AuthorBook = require('../models/AuthorBook');
+const CategoryBook = require("../models/CategoryBook");
+const Book = require("../models/Book");
+const CopyBook = require('../models/CopyBook');
 
 router.get('/:id_user/hold', async (req, res) => {
     try {
-        const {id_user} = req.params;
+        const { id_user } = req.params;
 
-        //Get list hold ticket of student
-        const holdTickets = await holdTicket.find({ID_student: id_user})
-            .populate('ID_book', 'name')
+        // Lấy danh sách các holdTicket của sinh viên
+        const holdTickets = await holdTicket.find({ ID_student: id_user })
             .exec();
-        
-        const now = new Date();
-        const response = holdTickets.map(ticket => {
-            const expired = now > ticket.day_expired;   //Check het han
-            const daysLeft = Math.max(0, Math.ceil((ticket.day_expired - now) / (1000 * 60 * 60 * 24))); // Tính ngày còn lại
-            
-            return {
-                ...ticket._doc, 
-                expired,
-                daysLeft,
-            };
-        });
 
+        const now = new Date();
+
+        // Xử lý danh sách holdTicket
+        const response = await Promise.all(
+            holdTickets.map(async (ticket) => {
+                const expired = now > ticket.day_expired; // Kiểm tra hết hạn
+                const daysLeft = expired
+                    ? 0
+                    : Math.ceil((ticket.day_expired - now) / (1000 * 60 * 60 * 24)); // Ngày còn lại
+
+                // Lấy thông tin Author từ AuthorBook
+                const authorData = await AuthorBook.findOne({ ID_book: ticket.ID_book });
+                const author = authorData ? authorData.author : 'Unknown';
+
+                // Lấy thông tin Category từ CategoryBook
+                const holdData = await CategoryBook.findOne({ ID_book: ticket.ID_book });
+                const category = holdData ? holdData.Category : 'Unknown';
+
+                // Lấy thông tin Category từ CategoryBook
+                const nameData = await Book.findOne({ _id: ticket.ID_book });
+                const nameBook = nameData ? nameData.name : 'Unknown';
+                const urlBook = nameData ? nameData.imageUrl : 'Unknown';
+
+                return {
+                    ...ticket._doc, // Dữ liệu gốc từ MongoDB
+                    nameBook, //Teen sach
+                    urlBook, //Anh cua sach
+                    author, // Tác giả
+                    category, // Danh mục
+                    daysLeft,
+                    expired,
+                };
+            })
+        );
+
+        // Trả kết quả về client
         res.status(200).json(response);
-    } catch(err) {
-        console.log(err);
-        res.status(500).json({message: 'Something went wrong', error: err.message});
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Something went wrong', error: err.message });
     }
 });
 
@@ -41,16 +68,53 @@ router.get('/:id_user/borrow', async (req, res) => {
             .exec();
         
         const now = new Date();
-        const response = borrowTickets.map(ticket => {
-            const expired = now > ticket.return_day;   //Check het han
-            const daysLeft = Math.max(0, Math.ceil((ticket.return_day - now) / (1000 * 60 * 60 * 24))); // Tính ngày còn lại
+        // Xử lý danh sách borrowTicket
+        const response = await Promise.all(
+            borrowTickets.map(async (ticket) => {
+                const expired = now > ticket.return_day; // Kiểm tra hết hạn
+                const daysLeft = expired
+                    ? 0
+                    : Math.ceil((ticket.return_day - now) / (1000 * 60 * 60 * 24)); // Ngày còn lại
+
+                
+                //Lấy ID_book từ ID_copy
+                const copyData = await CopyBook.findOne({ _id: ticket.ID_copy })
+                const id_book = copyData ? copyData.ID_book : '0';
+
+                // Lấy thông tin Author từ AuthorBook
+                const authorData = await AuthorBook.findOne({ ID_book: id_book });
+                const author = authorData ? authorData.author : 'Unknown';
+
+                // Lấy thông tin Category từ CategoryBook
+                const holdData = await CategoryBook.findOne({ ID_book: id_book });
+                const category = holdData ? holdData.Category : 'Unknown';
+
+                // Lấy thông tin Category từ CategoryBook
+                const nameData = await Book.findOne({ _id: id_book });
+                const nameBook = nameData ? nameData.name : 'Unknown';
+                const urlBook = nameData ? nameData.imageUrl : 'Unknown';
+
+                return {
+                    ...ticket._doc, // Dữ liệu gốc từ MongoDB
+                    nameBook, //Teen sach
+                    urlBook, //Anh cua sach
+                    author, // Tác giả
+                    category, // Danh mục
+                    daysLeft,
+                    expired,
+                };
+            })
+        );
+        // const response = borrowTickets.map(ticket => {
+        //     const expired = now > ticket.return_day;   //Check het han
+        //     const daysLeft = Math.max(0, Math.ceil((ticket.return_day - now) / (1000 * 60 * 60 * 24))); // Tính ngày còn lại
             
-            return {
-                ...ticket._doc, 
-                expired,
-                daysLeft,
-            };
-        });
+        //     return {
+        //         ...ticket._doc, 
+        //         expired,
+        //         daysLeft,
+        //     };
+        // });
 
         res.status(200).json(response);
     } catch(err) {
@@ -62,7 +126,16 @@ router.get('/:id_user/borrow', async (req, res) => {
 router.post('/:id/hold', async (req, res) => {
     try {
         const { id } = req.params; // ID của sinh viên
-        const { status, quantity, ID_book } = req.body; // Dữ liệu từ client
+        const { status, ID_book } = req.body; // Dữ liệu từ client
+        const quantity = 1;
+
+        
+
+        // Kiểm tra số lượng holdTicket có status = 1
+        const activeHoldTickets = await holdTicket.countDocuments({ ID_student: id, status: 1 });
+        if (activeHoldTickets >= 5) {
+            return res.status(400).json({ message: 'Thất bại, Vượt quá số lượng hold là 5' });
+        }
 
         // Hệ thống tự động gán thời gian tạo và thời gian hết hạn
         const day_create = new Date(); // Thời gian hiện tại
@@ -78,6 +151,19 @@ router.post('/:id/hold', async (req, res) => {
             ID_student: id,
             ID_book,
         });
+
+        // Kiểm tra xem ID_book có nằm trong holdTicket của người dùng hay không
+        const holdTic = await holdTicket.findOne({ 
+            ID_student: id, 
+            ID_book: ID_book, 
+        });
+
+        if (holdTic) {
+            return res.status(200).json({ 
+                exists: true, 
+                message: 'The book is already in the hold tickets.' 
+            });
+        }
 
         // Lưu vào database
         const savedTicket = await newHoldTicket.save();
