@@ -1,12 +1,12 @@
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
-require('dotenv').config();
-
 const app = express();
 const PORT = 3001;
 
 // Middleware
 app.use(express.json()); // Ensure you have this to parse JSON request bodies
+console.log('MongoDB URI:', process.env.MONGODB_URI);
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGODB_URI)
