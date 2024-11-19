@@ -97,8 +97,23 @@ router.post('/login', async (req, res) => {
     //Tra ve thong tin cua user vua dang nhap 
     const stu = await Student.findOne({ID: account._id});
     const user = await User.findOne({ID_user: account._id});
+
+    const retu = {
+      "ID_user": user.ID_user, 
+      "name": user.name, 
+      "avatar": user.avatar, 
+      "role": account.Use_Role, 
+      "gender": user.gender, 
+      "address": user.address, 
+      "join_date": user.join_date, 
+      "MSSV": stu.MSSV, 
+      "dob": stu.dob, 
+      "faculty": stu.faculty, 
+      "NoWarning": stu.NoWarning, 
+      "status": account.Status, 
+    }
     
-    res.json({message: 'Dang nhap thanh cong', user: user, student: stu});
+    res.json({message: 'Dang nhap thanh cong', retu});
   } catch (error) {
     res.status(500).json({ message: 'Lỗi khi đăng nhập', error });
   }

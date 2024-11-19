@@ -26,8 +26,10 @@ router.get('/:id_user/hold', async (req, res) => {
                     : Math.ceil((ticket.day_expired - now) / (1000 * 60 * 60 * 24)); // Ngày còn lại
 
                 // Lấy thông tin Author từ AuthorBook
-                const authorData = await AuthorBook.findOne({ ID_book: ticket.ID_book });
-                const author = authorData ? authorData.author : 'Unknown';
+                const authorData = await AuthorBook.find({ ID_book: ticket.ID_book }).exec();
+                const authors = authorData.map(author => author.author); 
+                            
+                //const author = authorData ? authorData.author : 'Unknown';
 
                 // Lấy thông tin Category từ CategoryBook
                 const holdData = await CategoryBook.findOne({ ID_book: ticket.ID_book });
@@ -36,22 +38,68 @@ router.get('/:id_user/hold', async (req, res) => {
                 // Lấy thông tin Category từ CategoryBook
                 const nameData = await Book.findOne({ _id: ticket.ID_book });
                 const nameBook = nameData ? nameData.name : 'Unknown';
-                const urlBook = nameData ? nameData.imageUrl : 'Unknown';
+                //const urlBook = nameData ? nameData.imageUrl : 'Unknown';
 
-                return {
-                    ...ticket._doc, // Dữ liệu gốc từ MongoDB
-                    nameBook, //Teen sach
-                    urlBook, //Anh cua sach
-                    author, // Tác giả
-                    category, // Danh mục
-                    daysLeft,
-                    expired,
-                };
+                retu = {
+                    "holdTicket_ID": ticket._id,
+                    "bookID": ticket.ID_book, 
+                    "title": nameBook, 
+                    "author": authors, 
+                    "category": category, 
+                    "status": ticket.status, 
+                    "createdDate": ticket.day_create, 
+                    "expiredDate": ticket.day_expired,
+                    "dayLeft": daysLeft
+                }
+
+                return retu;
             })
         );
 
         // Trả kết quả về client
         res.status(200).json(response);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Something went wrong', error: err.message });
+    }
+});
+
+router.get('/:id_user/hold_infor/:id_ticket', async (req, res) => {
+    try {
+        const { id_user, id_ticket } = req.params;
+
+
+        //Lấy thông tin của holdTicket cụ thể nào đó
+        const borrowTicket_one = await holdTicket.findOne({ _id: id_ticket });
+        const dataBook = await Book.findOne({ _id: borrowTicket_one.ID_book });
+        // Lấy thông tin Author từ AuthorBook
+        const authorData = await AuthorBook.find({ ID_book: borrowTicket_one.ID_book }).exec();
+        const authors = authorData.map(author => author.author); 
+
+        const holdData = await CategoryBook.findOne({ ID_book: borrowTicket_one.ID_book });
+        const category = holdData ? holdData.Category : 'Unknown';
+
+        const url = dataBook.imageUrl ? dataBook.imageUrl : "Unknown";
+        const edi = dataBook.edition ? dataBook.edition : "Unknown";
+
+        
+        retu = { 
+            "bookID": borrowTicket_one.ID_book, 
+            "createdDate": borrowTicket_one.day_create, 
+            "expiredDate": borrowTicket_one.day_expired, 
+            "status": borrowTicket_one.status, 
+            "imageUrl": url, 
+            "title": dataBook.name, 
+            "author": authors, 
+            "category": category, 
+            "edition": edi,
+            
+        }
+
+
+
+        // Trả kết quả về client
+        res.status(200).json(retu);
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Something went wrong', error: err.message });
@@ -82,8 +130,8 @@ router.get('/:id_user/borrow', async (req, res) => {
                 const id_book = copyData ? copyData.ID_book : '0';
 
                 // Lấy thông tin Author từ AuthorBook
-                const authorData = await AuthorBook.findOne({ ID_book: id_book });
-                const author = authorData ? authorData.author : 'Unknown';
+                const authorData = await AuthorBook.find({ ID_book: id_book }).exec();
+                const authors = authorData.map(author => author.author); 
 
                 // Lấy thông tin Category từ CategoryBook
                 const holdData = await CategoryBook.findOne({ ID_book: id_book });
@@ -94,15 +142,22 @@ router.get('/:id_user/borrow', async (req, res) => {
                 const nameBook = nameData ? nameData.name : 'Unknown';
                 const urlBook = nameData ? nameData.imageUrl : 'Unknown';
 
-                return {
-                    ...ticket._doc, // Dữ liệu gốc từ MongoDB
-                    nameBook, //Teen sach
-                    urlBook, //Anh cua sach
-                    author, // Tác giả
-                    category, // Danh mục
-                    daysLeft,
-                    expired,
-                };
+                const returnedDate = ticket.returnedDate ? ticket.returnedDate : "Not Yet";
+
+
+
+                retu = {
+                    "borrowTicket_ID": ticket._id,
+                    "title": nameBook, 
+                    "author": authors, 
+                    "createdDate": ticket.borrow_day, 
+                    "expiredDate": ticket.return_day,
+                    "returnedDate": returnedDate,
+                    "status": ticket.status, 
+                    "dayLeft": daysLeft
+                }
+
+                return retu;
             })
         );
         // const response = borrowTickets.map(ticket => {
@@ -116,10 +171,56 @@ router.get('/:id_user/borrow', async (req, res) => {
         //     };
         // });
 
-        res.status(200).json(response);
+        res.status(200).json(retu);
     } catch(err) {
         console.log(err);
         res.status(500).json({message: 'Something went wrong', error: err.message});
+    }
+});
+
+router.get('/:id_user/borrow_infor/:id_ticket', async (req, res) => {
+    try {
+        const { id_user, id_ticket } = req.params;
+
+
+        //Lấy thông tin của holdTicket cụ thể nào đó
+        const borrowTicket_one = await borrowTicket.findOne({ _id: id_ticket });
+        const copy = await CopyBook.findOne({ _id: borrowTicket_one.ID_copy });
+        const dataBook = await Book.findOne({ _id: copy.ID_book });
+        // Lấy thông tin Author từ AuthorBook
+        const authorData = await AuthorBook.find({ ID_book: copy.ID_book }).exec();
+        const authors = authorData.map(author => author.author); 
+
+        const holdData = await CategoryBook.findOne({ ID_book: copy.ID_book });
+        const category = holdData ? holdData.Category : 'Unknown';
+
+        const url = dataBook.imageUrl ? dataBook.imageUrl : "Unknown";
+        const edi = dataBook.edition ? dataBook.edition : "Unknown";
+        const nameBo = dataBook.name ? dataBook.name : "Unknown";
+
+        
+        retu = { 
+            "bookID": dataBook._id, 
+            "copyId": borrowTicket_one.ID_copy, 
+            "createdDate": borrowTicket_one.borrow_day, 
+            "expiredDate": borrowTicket_one.return_day, 
+            "status": borrowTicket_one.status, 
+            "returnedDate": borrowTicket_one.returnedDate, 
+            "imageUrl": url, 
+            "title": nameBo, 
+            "author": authors, 
+            "category": category, 
+            "edition": edi, 
+            "hasRated": borrowTicket_one.rated 
+        }
+
+
+
+        // Trả kết quả về client
+        res.status(200).json(retu);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Something went wrong', error: err.message });
     }
 });
 
