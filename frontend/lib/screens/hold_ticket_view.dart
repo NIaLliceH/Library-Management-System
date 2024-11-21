@@ -26,7 +26,7 @@ class HoldTicketView extends StatelessWidget {
           color: kBase3,
           icon: Icon(Icons.arrow_back_ios_rounded),
           onPressed: () {
-            Navigator.pop(context);
+            Navigator.pop(context, false);
           },
         ),
       ),
@@ -88,27 +88,55 @@ class HoldTicketView extends StatelessWidget {
                       onPressed: isButtonDisabled ?
                       null
                           : () async {
-                        try {
-                          await ApiService.cancelHoldTicket(userId, ticket.id);
-                          Navigator.pop(context);
-                        } catch (error) {
-                          showDialog(
-                              context: context,
-                              builder: (context) {
-                                return AlertDialog(
-                                  title: Text('Error'),
-                                  content: Text('Failed to cancel hold ticket: $error'),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () {
-                                        Navigator.pop(context);
-                                      },
-                                      child: Text('OK'),
-                                    )
-                                  ],
-                                );
-                              }
-                          );
+                        final confirm = await showDialog<bool>(
+                          context: context,
+                          builder: (context) {
+                            return AlertDialog(
+                              title: Text('Confirm'),
+                              content: Text('Are you sure you want to cancel this hold ticket?'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.pop(context, false);
+                                  },
+                                  child: Text('No'),
+                                ),
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.pop(context, true);
+                                  },
+                                  child: Text('Yes'),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+
+                        if (confirm == true) {
+                          try {
+                            ApiService.cancelHoldTicket(userId, ticket.id);
+                            if (context.mounted) Navigator.pop(context, true);
+                          } catch (error) {
+                            if (context.mounted) {
+                              showDialog(
+                                  context: context,
+                                  builder: (context) {
+                                    return AlertDialog(
+                                      title: Text('Error'),
+                                      content: Text('Failed to cancel hold ticket: $error'),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () {
+                                            Navigator.pop(context, false);
+                                          },
+                                          child: Text('OK'),
+                                        )
+                                      ],
+                                    );
+                                  }
+                              );
+                            }
+                          }
                         }
                       },
                       label: Text('Cancel'),

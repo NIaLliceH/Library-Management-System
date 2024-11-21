@@ -38,7 +38,8 @@ class HistoryPage extends StatelessWidget {
               child: Text('No data available'),
             );
           } else {
-            final tickets = snapshot.data!;
+            var tickets = snapshot.data!;
+            tickets = Utils.sortBorrowTicketsByPriority(tickets);
             // add you are borrowing no books message
             return Padding(
               padding: EdgeInsets.only(right: 8, left: 8, top: 10),

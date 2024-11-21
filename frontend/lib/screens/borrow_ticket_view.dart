@@ -96,7 +96,7 @@ class BorrowTicketView extends StatelessWidget {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => RateForm(userId: userId, bookId: ticket.bookId!),
+                                builder: (context) => RateForm(userId: userId, ticket: ticket),
                               ),
                             );
                           },

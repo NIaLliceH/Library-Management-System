@@ -51,7 +51,7 @@ class BookView extends StatelessWidget {
             }
             else {
               final book = snapshot.data!;
-              final bool isButtonDisabled = !book.canHold!;
+              final isButtonDisabled = !book.canHold!;
               return Stack(
                 children: [
                   SingleChildScrollView(
@@ -90,7 +90,7 @@ class BookView extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => HoldForm(bookId: book.id),
+                            builder: (context) => HoldForm(book: book),
                           ),
                         );
                       },

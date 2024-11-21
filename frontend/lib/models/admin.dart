@@ -1,5 +1,6 @@
 import 'package:frontend/models/user.dart';
 
+// no need anymore
 class Admin extends User {
   final String jobType;
 

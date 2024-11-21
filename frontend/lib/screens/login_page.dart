@@ -4,7 +4,7 @@ import 'package:frontend/api_service.dart';
 import '../main.dart';
 
 // Thai Hoa, do it :)
-// này tui viết tạm để get User info cho mấy page kia, ông thay lại bằng layout của ông nhé
+// này tui viết tạm để test api, ông thay lại bằng layout của ông nhé
 // miễn sao gọi MainPage(user: user) để truyền data của user từ api cho MainPage là đc
 class LoginPage extends StatelessWidget {
   LoginPage({super.key});

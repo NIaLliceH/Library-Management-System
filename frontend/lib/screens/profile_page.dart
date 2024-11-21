@@ -3,7 +3,7 @@ import '../constants.dart';
 import '../models/user.dart';
 
 // Ngoc Hoa, do it :)
-// add Logout button
+// add Logout button, go back to Login screen after clicked on 'Logout' button
 class ProfilePage extends StatelessWidget {
   final User user;
   const ProfilePage({super.key, required this.user});
@@ -22,7 +22,7 @@ class ProfilePage extends StatelessWidget {
           ),
         ),
       ),
-      body: Text('Display user information here'),
+      body: Text('TO DO'),
     );
   }
 }

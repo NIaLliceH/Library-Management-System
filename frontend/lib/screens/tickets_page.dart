@@ -58,7 +58,8 @@ class _TicketsPageState extends State<TicketsPage> {
               child: Text('No data available'),
             );
           } else {
-            final tickets = snapshot.data!;
+            var tickets = snapshot.data!;
+            tickets = Utils.sortHoldTicketsByPriority(tickets);
             // add you are borrowing no books message
             return Padding(
               padding: EdgeInsets.only(right: 8, left: 8, top: 10),

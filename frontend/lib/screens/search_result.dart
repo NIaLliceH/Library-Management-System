@@ -46,7 +46,8 @@ class SearchResult extends StatelessWidget {
               child: Text('No data available'),
             );
           } else {
-            final books = snapshot.data!;
+            var books = snapshot.data!;
+            books = Utils.sortBooksByAvailableCopies(books);
             return ListView.builder(
               padding: EdgeInsets.symmetric(vertical: 10, horizontal: 8),
               physics: BouncingScrollPhysics(),

@@ -36,7 +36,7 @@ class _HomePageState extends State<HomePage> {
                       color: Colors.grey),
                 ),
                 Text(
-                  'Welcome back!',
+                  'Welcome to BKLib!',
                   style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w700,
