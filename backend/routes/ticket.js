@@ -38,6 +38,7 @@ router.get('/:id_user/hold', async (req, res) => {
 
                 // Lấy thông tin Category từ CategoryBook
                 const nameData = await Book.findOne({ _id: ticket.ID_book });
+                
                 const nameBook = nameData ? nameData.name : 'Unknown';
                 //const urlBook = nameData ? nameData.imageUrl : 'Unknown';
 
@@ -330,8 +331,14 @@ router.post('/:id_user/borrow', async (req, res) => {
             ID_admin,
         });
 
+        
+
         // Lưu vào database
         const savedTicket = await newBorrowTicket.save();
+
+        const data_COuntborrow = await Book.findOne( {_id: ID_book} );
+        data_COuntborrow.borrowCount = data_COuntborrow.borrowCount + 1;
+        await data_COuntborrow.save();
 
         res.status(201).json({ message: 'Borrow ticket created successfully!', data: savedTicket });
     } catch (err) {
