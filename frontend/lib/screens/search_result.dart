@@ -13,16 +13,16 @@ class SearchResult extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 60,
-        backgroundColor: kBase2Color,
+        backgroundColor: kBase2,
         title: Text(
           'Search Result',
           style: TextStyle(
             fontSize: 20,
-            color: kBase4Color,
+            color: kBase4,
           ),
         ),
         leading: IconButton(
-          color: kBase3Color,
+          color: kBase3,
           icon: Icon(Icons.arrow_back_ios_rounded),
           onPressed: () {
             Navigator.pop(context);
@@ -30,8 +30,8 @@ class SearchResult extends StatelessWidget {
         ),
       ),
       body: FutureBuilder(
-        // future: ApiService.searchBooks(query),
-        future: ApiService.getAllBooks(), // temporary
+        future: ApiService.searchBookByName(query),
+        // future: ApiService.getAllBooks(), // temporary
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(
@@ -67,7 +67,7 @@ class SearchResult extends StatelessWidget {
                     padding: EdgeInsets.only(left: 5, top: 5, bottom: 5, right: 8),
                     height: 100,
                     decoration: BoxDecoration(
-                      color: kBase0Color,
+                      color: kBase0,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(
@@ -99,7 +99,7 @@ class SearchResult extends StatelessWidget {
                                 style: TextStyle(
                                     fontSize: 13,
                                     fontWeight: FontWeight.w700,
-                                    color: kBase3Color
+                                    color: kBase3
                                 ),
                               ),
                               Row(
@@ -121,7 +121,7 @@ class SearchResult extends StatelessWidget {
                                               fontSize: 12,
                                               fontStyle: FontStyle.italic,
                                               fontWeight: FontWeight.w300,
-                                              color: kBase3Color
+                                              color: kBase3
                                           )
                                       ),
                                     ],

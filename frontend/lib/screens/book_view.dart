@@ -1,28 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/api_service.dart';
-import 'package:frontend/screens/issue_form.dart';
+import 'package:frontend/screens/hold_form.dart';
 import 'package:frontend/utils.dart';
 import 'package:frontend/constants.dart';
+import 'package:frontend/models/book.dart';
 
 class BookView extends StatelessWidget {
+  final Book? book;
   final String bookId;
-  const BookView({super.key, required this.bookId});
+  const BookView({super.key, required this.bookId, this.book});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
           toolbarHeight: 60,
-          backgroundColor: kBase2Color,
+          backgroundColor: kBase2,
           title: Text(
             'Book View',
             style: TextStyle(
               fontSize: 20,
-              color: kBase4Color,
+              color: kBase4,
             ),
           ),
           leading: IconButton(
-            color: kBase3Color,
+            color: kBase3,
             icon: Icon(Icons.arrow_back_ios_rounded),
             onPressed: () {
               Navigator.pop(context);
@@ -30,7 +32,7 @@ class BookView extends StatelessWidget {
           ),
         ),
         body: FutureBuilder(
-          future: ApiService.getBookById(bookId),
+          future: book != null ? ApiService.getBookDetails(book!) : ApiService.getBookById(bookId),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return Center(
@@ -49,6 +51,7 @@ class BookView extends StatelessWidget {
             }
             else {
               final book = snapshot.data!;
+              final bool isButtonDisabled = !book.canHold!;
               return Stack(
                 children: [
                   SingleChildScrollView(
@@ -56,6 +59,7 @@ class BookView extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // book cover
                         Center(
                           child: Image.network(
                             book.imageUrl,
@@ -63,29 +67,34 @@ class BookView extends StatelessWidget {
                             height: 300,
                           ),
                         ),
-                        displayBookInfo('Title', book.title),
-                        displayBookInfo('Author', book.author),
-                        displayBookInfo('Category', book.category),
-                        displayBookInfo('Publisher', book.publisher),
-                        displayBookInfo('Available', '${book.availableCopies} / ${book.noOfCopies} copies'),
-                        displayBookInfo('No of Pages', book.noOfPages.toString()),
-                        displayBookInfo('Rating', '${book.rating} / 5'),
-                        displayBookInfo('Description', book.description),
+                        // book info
+                        Utils.displayInfo('Title', book.title),
+                        Utils.displayInfo('Author', book.author),
+                        Utils.displayInfo('Category', book.category),
+                        Utils.displayInfo('Publisher', book.publisher),
+                        Utils.displayInfo('Available', '${book.availableCopies} / ${book.noOfCopies} copies'),
+                        Utils.displayInfo('No of Pages', book.noOfPages.toString()),
+                        Utils.displayInfo('Rating', '${book.rating} / 5'),
+                        Utils.displayInfo('Description', book.description),
                       ],
                     ),
                   ),
                   Align(
                     alignment: Alignment.bottomCenter,
                     child: FloatingActionButton.extended(
-                      onPressed: () {
+                      label: Text('Hold this book'),
+                      backgroundColor: isButtonDisabled ? Colors.grey : kBase3,
+                      onPressed: isButtonDisabled ?
+                      null
+                      : () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => IssueForm(bookId: book.id),
+                            builder: (context) => HoldForm(bookId: book.id),
                           ),
                         );
                       },
-                      label: Text('Issue this book'),
+
                     ),
                   )
                 ],
@@ -93,32 +102,6 @@ class BookView extends StatelessWidget {
             }
           }
         ),
-    );
-  }
-
-  Widget displayBookInfo(String label, dynamic value) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 5),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '$label: ',
-            style: TextStyle(
-              // fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          Expanded(
-            child: Text(
-              Utils.processDisplayValue(value),
-              style: TextStyle(
-                fontSize: 16,
-              ),
-            ),
-          )
-        ],
-      ),
     );
   }
 }

@@ -13,16 +13,16 @@ class CategoryResult extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 60,
-        backgroundColor: kBase2Color,
+        backgroundColor: kBase2,
         title: Text(
           'Category: $category',
           style: TextStyle(
             fontSize: 20,
-            color: kBase4Color,
+            color: kBase4,
           ),
         ),
         leading: IconButton(
-          color: kBase3Color,
+          color: kBase3,
           icon: Icon(Icons.arrow_back_ios_rounded),
           onPressed: () {
             Navigator.pop(context);
@@ -67,7 +67,7 @@ class CategoryResult extends StatelessWidget {
                     padding: EdgeInsets.only(left: 5, top: 5, bottom: 5, right: 8),
                     height: 100,
                     decoration: BoxDecoration(
-                      color: kBase0Color,
+                      color: kBase0,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(
@@ -99,7 +99,7 @@ class CategoryResult extends StatelessWidget {
                                 style: TextStyle(
                                     fontSize: 13,
                                     fontWeight: FontWeight.w700,
-                                    color: kBase3Color
+                                    color: kBase3
                                 ),
                               ),
                               Row(
@@ -121,7 +121,7 @@ class CategoryResult extends StatelessWidget {
                                               fontSize: 12,
                                               fontStyle: FontStyle.italic,
                                               fontWeight: FontWeight.w300,
-                                              color: kBase3Color
+                                              color: kBase3
                                           )
                                       ),
                                     ],
@@ -133,7 +133,7 @@ class CategoryResult extends StatelessWidget {
                                       '${books[index].availableCopies} available',
                                       style: TextStyle(
                                           fontSize: 13,
-                                          color: books[index].availableCopies > 0 ? Color(0xFF508D4E) : Color(0xFFFA7070),
+                                          color: books[index].availableCopies > 0 ? greenStatus : redStatus,
                                           fontStyle: FontStyle.italic),
                                     ),
                                   )

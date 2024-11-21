@@ -1,13 +1,13 @@
 import 'package:frontend/constants.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:frontend/screens/search_result.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../api_service.dart';
+import 'package:frontend/api_service.dart';
 import 'category_result.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final String userName;
+  const HomePage({super.key, required this.userName});
 
   @override
   State<StatefulWidget> createState() => _HomePageState();
@@ -29,7 +29,7 @@ class _HomePageState extends State<HomePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Hi, Alice',
+                  'Hi, ${widget.userName}',
                   style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
@@ -56,7 +56,7 @@ class _HomePageState extends State<HomePage> {
                   Container(
                     padding: EdgeInsets.only(right: 80),
                     decoration: BoxDecoration(
-                        color: kBase1Color,
+                        color: kBase1,
                         borderRadius: BorderRadius.all(Radius.circular(20)),
                         border: Border.all(width: 1, color: Color(0x77365486))),
                     child: TextField(
@@ -65,8 +65,8 @@ class _HomePageState extends State<HomePage> {
                           userInput = value;
                         });
                       },
-                      onSubmitted: (userInput) {
-                        final query = userInput.trim();
+                      onSubmitted: (value) {
+                        final query = value.trim();
                         if (query.isNotEmpty) {
                           Navigator.push(
                             context,
@@ -126,7 +126,7 @@ class _HomePageState extends State<HomePage> {
                         indicatorPadding: EdgeInsets.only(right: 20),
                         tabAlignment: TabAlignment.start,
                         isScrollable: true,
-                        labelColor: kBase3Color,
+                        labelColor: kBase3,
                         labelStyle:
                             TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
                         unselectedLabelColor: Colors.grey,
@@ -166,7 +166,7 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             FutureBuilder(
-              future: ApiService.getCategoryList(),
+              future: ApiService.getAllCategories(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return Center(
@@ -205,7 +205,7 @@ class _HomePageState extends State<HomePage> {
                           style: ElevatedButton.styleFrom(
                             padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
                             alignment: Alignment.centerLeft,
-                            backgroundColor: kBase2Color,
+                            backgroundColor: kBase2,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),
@@ -217,12 +217,12 @@ class _HomePageState extends State<HomePage> {
                                 categories[index],
                                 style: TextStyle(
                                   fontSize: 16,
-                                  color: kBase3Color,
+                                  color: kBase3,
                                 ),
                               ),
                               Icon(
                                 Icons.arrow_forward_ios_rounded,
-                                color: kBase1Color,
+                                color: kBase1,
                               ),
                             ],
                           ),

@@ -2,8 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:frontend/constants.dart';
 import 'package:frontend/screens/history_page.dart';
 import 'package:frontend/screens/home_page.dart';
+import 'package:frontend/screens/login_page.dart';
 import 'package:frontend/screens/profile_page.dart';
 import 'package:frontend/screens/tickets_page.dart';
+import 'package:google_fonts/google_fonts.dart';
+
+import 'models/user.dart';
 
 void main() {
   runApp(MyApp());
@@ -16,14 +20,17 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Library Management System',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(fontFamily: 'Open Sans'),
-      home: MainPage(),
+      theme: ThemeData(
+        fontFamily: GoogleFonts.openSans().fontFamily,
+      ),
+      home: LoginPage(),
     );
   }
 }
 
 class MainPage extends StatefulWidget {
-  const MainPage({super.key});
+  final User user;
+  const MainPage({super.key, required this.user});
 
   @override
   State<StatefulWidget> createState() => _MainPageState();
@@ -32,12 +39,18 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> {
   int _selectedIndex = 0;
 
-  static const List<Widget> _pages = <Widget>[
-    HomePage(),
-    TicketsPage(),
-    HistoryPage(),
-    ProfilePage(),
-  ];
+  late final List<Widget> _pages;
+
+  @override
+  void initState() {
+    super.initState();
+    _pages = <Widget>[
+      HomePage(userName: widget.user.name),
+      TicketsPage(userId: widget.user.id),
+      HistoryPage(userId: widget.user.id),
+      ProfilePage(user: widget.user),
+    ];
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -55,6 +68,8 @@ class _MainPageState extends State<MainPage> {
         height: 60,
         child: BottomNavigationBar(
           type: BottomNavigationBarType.fixed,
+          showUnselectedLabels: false,
+          showSelectedLabels: false,
           items: const <BottomNavigationBarItem>[
             BottomNavigationBarItem(
               icon: Icon(Icons.home),
@@ -74,9 +89,9 @@ class _MainPageState extends State<MainPage> {
             ),
           ],
           currentIndex: _selectedIndex,
-          selectedItemColor: kBase1Color,
-          unselectedItemColor: kBase2Color,
-          backgroundColor: kBase3Color,
+          selectedItemColor: kBase1,
+          unselectedItemColor: kBase2,
+          backgroundColor: kBase3,
           onTap: _onItemTapped,
 
         ),
