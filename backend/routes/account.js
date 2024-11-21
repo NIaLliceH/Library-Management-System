@@ -4,7 +4,7 @@ const Account = require('../models/Account'); // Import the Account model
 const User = require('../models/User');       // Import User model
 const Student = require('../models/Student')    // Import student model
 const Admin = require('../models/Admin');
-// const bcrypt = require('bcrypt');
+const bcrypt = require('bcrypt');
 // const jwt = require('jsonwebtoken');
 
 // const JWT_SECRET = 'httt'; // Thay bằng khóa bí mật của bạn
@@ -12,7 +12,7 @@ const Admin = require('../models/Admin');
 
 router.post('/signup', async (req, res) => {
   try {
-    const {email, password, role, status, nam, gen, addr, ava, jod, mssv, dob, fac, numwa, job_des} = req.body;
+    const {email, password, role, status, nam, gen, addr, ava, mssv, dob, fac, numwa, job_des} = req.body;
 
     // Kiểm tra xem email đã tồn tại hay chưa
     const existingUser = await Account.findOne({ Email: email });
@@ -21,13 +21,13 @@ router.post('/signup', async (req, res) => {
     }
 
     // Hash password
-    // const bcrypt = require('bcryptjs');
-    // const hashedPassword = await bcrypt.hash(password, 10); // Mã hóa mật khẩu
+    const bcrypt = require('bcrypt');
+    const hashedPassword = await bcrypt.hash(password, 10); // Mã hóa mật khẩu
 
     // Tạo tài khoản mới
     const newAccount = new Account({
       Email: email, 
-      Password: password, // Dùng mật khẩu đã mã hóa
+      HashPassword: hashedPassword, // Dùng mật khẩu đã mã hóa
       Use_Role: role,   // role là student/admin
       Status: status,   // status là on/off
     });
@@ -40,7 +40,7 @@ router.post('/signup', async (req, res) => {
       gender: gen,
       address: addr,
       avatar: ava,
-      join_date: jod,
+      join_date: Date.now(),
       email: email,
       ID_user: savedAccount._id
     });
@@ -85,9 +85,13 @@ router.post('/login', async (req, res) => {
         return res.status(400).json({message: 'Sai email'});
     }
 
+    // if (account.Use_Role != user_role) {
+    //   return res.status(400).json({message: 'Not allow'});
+    // }
+
     //Kiem tra mat khau
-    // const isMatch = await bcrypt.compare(password, account.password);
-    if (password != account.Password) {
+    const isMatch = await bcrypt.compare(password, account.HashPassword);
+    if (!isMatch) {
         return res.status(400).json({message: 'Sai mat khau'});
     }
 
@@ -102,7 +106,7 @@ router.post('/login', async (req, res) => {
       "ID_user": user.ID_user, 
       "name": user.name, 
       "avatar": user.avatar, 
-      "role": account.Use_Role, 
+      // "role": account.Use_Role, 
       "gender": user.gender, 
       "address": user.address, 
       "join_date": user.join_date, 

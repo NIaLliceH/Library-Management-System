@@ -5,7 +5,7 @@ const userSchema = new mongoose.Schema({
   gender: String,
   address: String,
   avatar: String,
-  join_date: String,
+  join_date: Date,  
   email: String,
   ID_user: { type: mongoose.Schema.Types.ObjectId, ref: 'Account' },
 });

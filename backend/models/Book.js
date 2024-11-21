@@ -14,7 +14,7 @@ const bookSchema = new mongoose.Schema({
     four: { type: Number, default: 0 },
     five: { type: Number, default: 0 },
   },
-  publish_date: Date,
+  datePublish: { type: Date, default: Date.now },
   edition: String,
 });
 

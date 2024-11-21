@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const studentSchema = new mongoose.Schema({
-  MSSV: String,
+  MSSV: { type: String, unique: true, required: true },
   dob: String,
   faculty: String,
   NoWarning: String,
