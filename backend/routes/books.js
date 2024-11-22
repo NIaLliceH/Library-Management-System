@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Book = require('../models/Book'); // Import the Book model
 const CopyBook = require('../models/CopyBook');
+
 // Get all books
 router.get('/', async (req, res) => {
   try {
@@ -29,6 +30,7 @@ router.get('/:id', async (req, res) => {
     res.status(500).json({ message: 'Lỗi khi lấy thông tin sách', error });
   }
 });
+
 // POST route to add a new book
 router.post('/', async (req, res) => {
   try {
