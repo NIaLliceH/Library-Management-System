@@ -20,44 +20,44 @@ class _TicketPageState extends State<TicketPage> {
   bool _isExpanded = false;
   @override
   Widget build(BuildContext context) {
-    return Column(children: [
-      Align(
-        alignment: Alignment.topCenter,
-        child: Container(
-            color: Color(0xFF365486),
-            height: 50,
-            width: double.infinity,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                SizedBox(
-                  width: 10,
-                ),
-                IconButton(
-                  icon: Icon(Icons.arrow_back_ios_new_rounded),
-                  onPressed: () {
-                    print('Pressed return!');
-                  },
-                  color: Color(0xFF0F1035),
-                ),
-                SizedBox(
-                  width: 10,
-                ),
-                Text(
-                  'Ticket',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 30,
-                    color: Color(0xFF0F1035),
-                  ),
-                ),
-              ],
-            )),
-      ),
-      Expanded(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: EdgeInsets.all(25),
+    return LayoutBuilder(builder: (context, constraints) {
+      return SingleChildScrollView(
+        child: Column(children: [
+          Align(
+            alignment: Alignment.topCenter,
+            child: Container(
+                color: Color(0xFF365486),
+                height: 50,
+                width: double.infinity,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    SizedBox(
+                      width: 10,
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.arrow_back_ios_new_rounded),
+                      onPressed: () {
+                        print('Pressed return!');
+                      },
+                      color: Color(0xFF0F1035),
+                    ),
+                    SizedBox(
+                      width: 10,
+                    ),
+                    Text(
+                      'Ticket',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 30,
+                        color: Color(0xFF0F1035),
+                      ),
+                    ),
+                  ],
+                )),
+          ),
+          Padding(
+            padding: EdgeInsets.all(20),
             child: Column(children: [
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -70,76 +70,149 @@ class _TicketPageState extends State<TicketPage> {
                       ),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: Image.asset(
-                      'assets/SWSG.jpg',
-                      height: 300,
-                      width: 200,
-                      fit: BoxFit.cover,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: const Color.fromARGB(255, 238, 238, 238),
+                          width: 5.0,
+                        ),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Image.asset(
+                        'assets/SWSG.jpg',
+                        fit: BoxFit.contain,
+                        width: constraints.maxWidth < 600
+                            ? MediaQuery.of(context).size.width * 0.3
+                            : 260,
+                      ),
                     ),
                   ),
                   SizedBox(width: 20),
-                  Column(
+                  Expanded(
+                    child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        SizedBox(
-                          width: 220,
-                          child: Flexible(
-                            child: Text('Secret window, secret garden',
-                                style: TextStyle(
-                                    fontSize: 30,
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.black)),
+                        Text(
+                          'Secret window, secret garden',
+                          style: TextStyle(
+                            fontSize: constraints.maxWidth < 480 ?
+                            MediaQuery.of(context).size.width * 0.04:
+                            constraints.maxWidth < 600 ?
+                            MediaQuery.of(context).size.width * 0.05:
+                            29,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black,
                           ),
                         ),
                         SizedBox(height: 10),
-                        Text('BOOK-ID:x0000000000000',
-                            style: TextStyle(
-                                fontStyle: FontStyle.italic,
-                                fontSize: 15,
-                                fontWeight: FontWeight.w200,
-                                color:
-                                    const Color.fromARGB(255, 110, 110, 110))),
-                        SizedBox(height: 20),
-                        Text('TICKET-ID:'),
-                        SizedBox(
-                          width: 220,
-                          child: Text('2211129-HoThaiHoa-abc-6/11',
-                              style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.black)),
+                        Text(
+                          'BOOK-ID:x0000000000000',
+                          style: TextStyle(
+                            fontStyle: FontStyle.italic,
+                            fontSize:  constraints.maxWidth < 480 ?
+                            MediaQuery.of(context).size.width * 0.025:
+                            constraints.maxWidth < 600 ?
+                            MediaQuery.of(context).size.width * 0.03:
+                            18,
+                            fontWeight: FontWeight.w200,
+                            color: const Color.fromARGB(255, 110, 110, 110),
+                          ),
                         ),
-                        SizedBox(height: 20),
-                        Text('Issue date:'),
-                        SizedBox(
-                          width: 220,
-                          child: Text('6/11/2024',
-                              style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.black)),
+                        SizedBox(height: 4),
+                        Text(
+                          'TICKET-ID:',
+                          style: TextStyle(
+                            fontSize: constraints.maxWidth < 480 ?
+                            MediaQuery.of(context).size.width * 0.025:
+                            constraints.maxWidth < 600 ?
+                            MediaQuery.of(context).size.width * 0.03:
+                            18,
+                            fontWeight: FontWeight.w400,
+                            color: Colors.black,
+                          ),
                         ),
-                        Text('Due date:'),
-                        SizedBox(
-                          width: 220,
-                          child: Text('20/11/2024',
-                              style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.black)),
+                        SizedBox(height: 2),
+                        Text(
+                          '2211129-HoThaiHoa-abc-6/11',
+                          style: TextStyle(
+                            fontSize: constraints.maxWidth < 480 ?
+                            MediaQuery.of(context).size.width * 0.025:
+                            constraints.maxWidth < 600 ?
+                            MediaQuery.of(context).size.width * 0.03:
+                            18,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black,
+                          ),
                         ),
-                        SizedBox(
-                          width: 220,
-                          child: Text(
-                              'After this date, if the book is not returned, account credit will be decreased',
-                              style: TextStyle(
-                                  fontStyle: FontStyle.italic,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w200,
-                                  color:
-                                      const Color.fromARGB(255, 75, 75, 75))),
-                        )
-                      ]),
+                        SizedBox(height: 3),
+                        Text(
+                          'Issue date:',
+                          style: TextStyle(
+                            fontSize: constraints.maxWidth < 480 ?
+                            MediaQuery.of(context).size.width * 0.025:
+                            constraints.maxWidth < 600 ?
+                            MediaQuery.of(context).size.width * 0.03:
+                            18,
+                            fontWeight: FontWeight.w400,
+                            color: Colors.black,
+                          ),
+                        ),
+                        SizedBox(height: 2),
+                        Text(
+                          '6/11/2024',
+                          style: TextStyle(
+                            fontSize:constraints.maxWidth < 480 ?
+                            MediaQuery.of(context).size.width * 0.025:
+                             constraints.maxWidth < 600 ?
+                            MediaQuery.of(context).size.width * 0.03:
+                            18,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black,
+                          ),
+                        ),
+                        SizedBox(height: 2),
+                        Text(
+                          'Due date:',
+                          style: TextStyle(
+                            fontSize: constraints.maxWidth < 480 ?
+                            MediaQuery.of(context).size.width * 0.025:
+                            constraints.maxWidth < 600 ?
+                            MediaQuery.of(context).size.width * 0.03:
+                            18,
+                            fontWeight: FontWeight.w400,
+                            color: Colors.black,
+                          ),
+                        ),
+                        SizedBox(height: 2),
+                        Text(
+                          '20/11/2024',
+                          style: TextStyle(
+                            fontSize: constraints.maxWidth < 480 ?
+                            MediaQuery.of(context).size.width * 0.025:
+                            constraints.maxWidth < 600 ?
+                            MediaQuery.of(context).size.width * 0.03:
+                            18,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black,
+                          ),
+                        ),
+                        SizedBox(height: 3),
+                        Text(
+                          'After this date, if the book is not returned, account credit will be decreased',
+                          style: TextStyle(
+                            fontStyle: FontStyle.italic,
+                            fontSize: constraints.maxWidth < 480 ?
+                            MediaQuery.of(context).size.width * 0.02:
+                            constraints.maxWidth < 600 ?
+                            MediaQuery.of(context).size.width * 0.025:
+                            15,
+                            fontWeight: FontWeight.w200,
+                            color: const Color.fromARGB(255, 75, 75, 75),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
                 ],
               ),
               Align(
@@ -152,7 +225,9 @@ class _TicketPageState extends State<TicketPage> {
                       text: TextSpan(
                         style: TextStyle(
                           height: 1.8,
-                          fontSize: 15,
+                          fontSize: constraints.maxWidth < 600
+                            ? MediaQuery.of(context).size.width * 0.03
+                            : 20,
                           fontWeight: FontWeight.w500,
                           color: Colors.black,
                         ),
@@ -170,14 +245,14 @@ class _TicketPageState extends State<TicketPage> {
                               text: 'Edition: '),
                           TextSpan(
                             text:
-                                'First published in 1990 (Hardcover Edition)\n', // Second part of the text
+                                'First published in 1990 (Hardcover Edition)\n', 
                           ),
                           TextSpan(
                               style: TextStyle(fontWeight: FontWeight.w700),
                               text: 'Category: '),
                           TextSpan(
                             text:
-                                'Fiction, Horror, Suspense, Short Stories\n', // Third part of the text
+                                'Fiction, Horror, Suspense, Short Stories\n', 
                           ),
                           TextSpan(
                               style: TextStyle(fontWeight: FontWeight.w700),
@@ -206,8 +281,8 @@ class _TicketPageState extends State<TicketPage> {
                         _isExpanded ? 'Show Less' : 'Show More',
                         style: TextStyle(
                             color: const Color.fromRGBO(
-                                131, 131, 131, 1), // Text color for the button
-                            fontSize: 13, // Text size for the button
+                                131, 131, 131, 1), 
+                            fontSize: 13, 
                             fontStyle: FontStyle.italic),
                       ),
                     ),
@@ -240,9 +315,8 @@ class _TicketPageState extends State<TicketPage> {
               )
             ]),
           ),
-        ),
-      ),
-    ]);
+        ]),
+      );
+    });
   }
 }
-

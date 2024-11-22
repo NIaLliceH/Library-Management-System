@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
-// import 'package:http/http.dart' as http;
-import 'package:english_words/english_words.dart';
 import 'package:provider/provider.dart';
-import 'auth.dart';
-import 'ticket.dart';
-import 'ticketList.dart';
+import 'package:frontend/screens/login_page.dart';
+import 'package:frontend/screens/issue_form.dart';
+import 'package:frontend/screens/tickets_page.dart';
+// import 'auth.dart';
+// import 'ticket.dart';
+// import 'ticketList.dart';
+
 void main() {
   runApp(MyApp());
 }
@@ -31,23 +33,6 @@ class MyApp extends StatelessWidget {
 }
 
 class MyAppState extends ChangeNotifier {
-  var current = WordPair.random();
-
-  void getNext() {
-    current = WordPair.random();
-    notifyListeners();
-  }
-
-  var favorites = <WordPair>[];
-
-  void toggleFavorite() {
-    if (favorites.contains(current)) {
-      favorites.remove(current);
-    } else {
-      favorites.add(current);
-    }
-    notifyListeners();
-  }
 }
 
 class MyHomePage extends StatefulWidget {
@@ -56,13 +41,13 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  var selectedIndex = 0;
+  var selectedIndex = 1;
   @override
   Widget build(BuildContext context) {
     Widget page;
     switch (selectedIndex) {
       case 0:
-        page = AuthPage();
+        page = TicketPage();
       case 1:
         page = TicketPage();
       case 2:
@@ -116,19 +101,3 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 }
-
-//  void sendRequest() async {
-//     final url = Uri.parse('http://your-node-api-url.com/endpoint'); 
-//     try {
-//       final response = await http.get(url);
-      
-//       if (response.statusCode == 200) {
-//         final responseData = json.decode(response.body);
-//         print('Response: $responseData');
-//       } else {
-//         print('Failed to load data');
-//       }
-//     } catch (e) {
-//       print('Error: $e');
-//     }
-//   }
