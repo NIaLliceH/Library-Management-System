@@ -28,9 +28,11 @@ mongoose.connect(process.env.MONGODB_URI)
 const bookRoutes = require('./routes/books'); // Adjust path if needed
 const authen = require('./routes/account');
 const tickets = require('./routes/ticket');
+const admin = require('./routes/admin');
 const { connect } = require('http2');
 app.use('/api/books', bookRoutes); // This maps `/api/books` to routes defined in `books.js`
 app.use('/api/authen', authen);
+app.use('/api/admin', admin);
 app.use('/api/', tickets)
 
 //Create HTTP server and integrate with Socket.IO
