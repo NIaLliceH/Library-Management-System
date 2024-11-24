@@ -1,88 +1,73 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User'); // Import model User
+const Account = require('../models/Account');
 
-
-// Lấy tất cả thông tin của user là student
-router.get('/students', async (req, res) => {
+// Lấy tất cả account student
+router.get('/user-student', async (req, res) => {
   try {
     // Giả sử tất cả student là những user có `role: "student"` trong User schema
-    const students = await User.find({ role: 'student' }).lean();
+    const students = await Account.find({ Use_Role: 'student' }).lean();
 
     if (!students || students.length === 0) {
-      return res.status(404).json({ message: 'Không tìm thấy sinh viên nào' });
+      return res.status(404).json({ message: 'Không tìm thấy tài khoản sinh viên nào' });
     }
 
     res.status(200).json(students);
   } catch (error) {
-    res.status(500).json({ message: 'Lỗi khi lấy danh sách sinh viên', error });
+    res.status(500).json({ message: 'Lỗi khi lấy danh sách tài khoản sinh viên', error });
   }
 });
-
-// Thêm user mới
-router.post('/users', async (req, res) => {
+// Tìm tài khoản qua email
+router.get('/user-by-account/:email', async (req, res) => {
   try {
-    const { name, gender, address, avatar, join_date, email, ID_user, role } = req.body;
+    const { email } = req.params;
 
-    if (!name || !email || !role) {
-      return res.status(400).json({ message: 'Vui lòng cung cấp đầy đủ thông tin người dùng' });
+    const account = await Account.findOne({ Email: email });
+
+    if (!account) {
+      return res.status(404).json({ message: 'Không tìm thấy tài khoản' });
     }
 
-    const newUser = new User({
-      name,
-      gender,
-      address,
-      avatar,
-      join_date: join_date || new Date(),
-      email,
-      ID_user,
-      role,
-    });
+    const user = await User.findOne({ ID_user: account._id }).populate('ID_user');
 
-    const savedUser = await newUser.save();
-    res.status(201).json({ message: 'Thêm user thành công', user: savedUser });
-  } catch (error) {
-    res.status(500).json({ message: 'Lỗi khi thêm user', error });
-  }
-});
-
-// Xóa user theo ID
-router.delete('/users/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const deletedUser = await User.findByIdAndDelete(id);
-
-    if (!deletedUser) {
-      return res.status(404).json({ message: 'Không tìm thấy user để xóa' });
+    if (!user) {
+      return res.status(404).json({ message: 'Không tìm thấy người dùng thông qua email' });
     }
 
-    res.status(200).json({ message: 'Xóa user thành công', user: deletedUser });
+    res.status(200).json({ message: 'Không có người dùng', user });
   } catch (error) {
-    res.status(500).json({ message: 'Lỗi khi xóa user', error });
+    res.status(500).json({ message: 'Lỗi tìm người dùng qua email', error });
   }
 });
-
-// Cập nhật thông tin user
-router.put('/users/:id', async (req, res) => {
+// Admin ban sinh viên
+router.put('/accounts/ban', async (req, res) => {
   try {
-    const { id } = req.params;
-    const { name, gender, address, avatar, email, role } = req.body;
+    const { email } = req.body;
 
-    const updatedUser = await User.findByIdAndUpdate(
-      id,
-      { name, gender, address, avatar, email, role },
-      { new: true }
-    );
-
-    if (!updatedUser) {
-      return res.status(404).json({ message: 'Không tìm thấy user để cập nhật' });
+    if (!email) {
+      return res.status(400).json({ message: 'Vui lòng cung cấp email của tài khoản' });
     }
 
-    res.status(200).json({ message: 'Cập nhật user thành công', user: updatedUser });
+    // Tìm tài khoản bằng email
+    const account = await Account.findOne({ Email: email });
+
+    if (!account) {
+      return res.status(404).json({ message: 'Không tìm thấy tài khoản với email này' });
+    }
+
+    // Kiểm tra nếu tài khoản đã bị cấm
+    if (account.Status === 'banned') {
+      return res.status(400).json({ message: 'Tài khoản này đã bị cấm trước đó' });
+    }
+
+    // Cập nhật trạng thái tài khoản thành 'banned'
+    account.Status = 'banned';
+    await account.save();
+
+    res.status(200).json({ message: 'Tài khoản đã bị cấm thành công', account });
   } catch (error) {
-    res.status(500).json({ message: 'Lỗi khi cập nhật user', error });
+    res.status(500).json({ message: 'Lỗi khi cấm tài khoản', error });
   }
 });
-
 module.exports = router;
