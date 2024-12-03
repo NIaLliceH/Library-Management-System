@@ -21,7 +21,7 @@ const Color viewButton = Color(0xFF365486);
 const Color loginButton = Color(0xFF365486);
 const Color logoutButton = Color(0xFFFA7070);
 
-const apiUrl = 'http://192.168.22.170:3000/api';
+const apiUrl = 'http://localhost:3000/api';
 
 // enum type for book category
 enum BookFilter {

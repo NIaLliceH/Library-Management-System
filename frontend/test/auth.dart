@@ -354,6 +354,7 @@ void sendRequest(String email, String password) async {
   final loginData = {
     'email': email,
     'password': password,
+    'role' : 'student'
   };
 
   try {
