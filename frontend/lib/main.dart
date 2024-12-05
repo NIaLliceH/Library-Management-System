@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         fontFamily: GoogleFonts.openSans().fontFamily,
       ),
-      home: LoginPage(),
+      home: LoginPage(), // always start with login page
     );
   }
 }
