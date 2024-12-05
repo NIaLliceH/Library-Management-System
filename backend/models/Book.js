@@ -17,6 +17,7 @@ const bookSchema = new mongoose.Schema({
   datePublish: { type: Date, default: Date.now },
   edition: String,
   borrowCount: {type: Number, default: 0},
+  category: String,
 });
 
 // Virtual for calculating NoCopies based on CopyBook status

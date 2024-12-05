@@ -30,7 +30,7 @@ router.get('/categories', async (req, res) => {
 router.get('/category/:category', async (req, res) => {
   try {
     const { category } = req.params;
-    const categoryBooks = await CategoryBook.find({ category }).populate('ID_book');
+    const categoryBooks = await Book.find({ category }).populate('ID_book');
     if (!categoryBooks.length) {
       return res.status(404).json({ message: 'Không tìm thấy sách trong category này' });
     }
