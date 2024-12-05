@@ -20,7 +20,7 @@ router.get('/', async (req, res) => {
 // Lấy tất cả category
 router.get('/categories', async (req, res) => {
   try {
-    const categories = await Book.distinct('category');
+    const categories = await CategoryBook.find({}).distinct('category');
     res.json({ categories });
   } catch (error) {
     res.status(500).json({ message: 'Lỗi khi lấy danh sách categories', error });
@@ -30,12 +30,12 @@ router.get('/categories', async (req, res) => {
 router.get('/category/:category', async (req, res) => {
   try {
     const { category } = req.params;
-    const books = await Book.find({ category }).lean();
-    
-    if (!books.length) {
+    const categoryBooks = await CategoryBook.find({ category }).populate('ID_book');
+    if (!categoryBooks.length) {
       return res.status(404).json({ message: 'Không tìm thấy sách trong category này' });
     }
 
+    const books = categoryBooks.map(cb => cb.ID_book);
     res.status(200).json(books);
   } catch (error) {
     res.status(500).json({ message: 'Lỗi khi lấy sách theo category', error });
