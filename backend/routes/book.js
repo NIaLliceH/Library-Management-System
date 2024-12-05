@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const Book = require('../models/Book'); // Import the Book model
 const CopyBook = require('../models/CopyBook');
-const CategoryBook = require('../models/CategoryBook');
 const AuthorBook = require('../models/AuthorBook');
 
 // Get all books
@@ -11,7 +10,6 @@ router.get('/', async (req, res) => {
     const books = await Book.find({}).lean();
     for (const book of books) {
       book.copies = await CopyBook.find({ ID_book: book._id });
-      book.categories = await CategoryBook.find({ ID_book: book._id }, 'category');
       book.authors = await AuthorBook.find({ ID_book: book._id }, 'author');
     }
     res.json(books);
@@ -22,7 +20,7 @@ router.get('/', async (req, res) => {
 // Lấy tất cả category
 router.get('/categories', async (req, res) => {
   try {
-    const categories = await CategoryBook.find({}).distinct('category');
+    const categories = await Book.distinct('category');
     res.json({ categories });
   } catch (error) {
     res.status(500).json({ message: 'Lỗi khi lấy danh sách categories', error });
@@ -32,18 +30,17 @@ router.get('/categories', async (req, res) => {
 router.get('/category/:category', async (req, res) => {
   try {
     const { category } = req.params;
-    const categoryBooks = await CategoryBook.find({ category }).populate('ID_book');
-    if (!categoryBooks.length) {
+    const books = await Book.find({ category }).lean();
+    
+    if (!books.length) {
       return res.status(404).json({ message: 'Không tìm thấy sách trong category này' });
     }
 
-    const books = categoryBooks.map(cb => cb.ID_book);
     res.status(200).json(books);
   } catch (error) {
     res.status(500).json({ message: 'Lỗi khi lấy sách theo category', error });
   }
 });
-
 // Tìm kiếm sách theo tên
 router.get('/search', async (req, res) => {
   try {
@@ -148,7 +145,6 @@ router.get('/:id', async (req, res) => {
         canBorrow: copy.status === "available" ? 1 : 0 // Kiểm tra trạng thái
       }));
 
-      book.categories = await CategoryBook.find({ ID_book: book._id }, 'category');
       book.authors = await AuthorBook.find({ ID_book: book._id }, 'author');
 
       res.json(book);
@@ -172,7 +168,7 @@ router.post('/', async (req, res) => {
       Description,
       imageUrl,
       copies,
-      categories // Thêm danh sách category
+      category,
     } = req.body;
 
     // Tạo một sách mới
@@ -202,14 +198,6 @@ router.post('/', async (req, res) => {
       await CopyBook.insertMany(copyBooks);
     }
 
-    // Thêm category vào CategoryBook nếu có
-    if (categories && categories.length > 0) {
-      const categoryBooks = categories.map(category => ({
-        ID_book: savedBook._id,
-        category: category.trim(),
-      }));
-      await CategoryBook.insertMany(categoryBooks);
-    }
 
     res.status(201).json({ message: 'Thêm sách thành công', book: savedBook });
   } catch (error) {
@@ -268,7 +256,7 @@ router.delete('/:id', async (req, res) => {
 router.put('/:id', async (req, res) => {
   try {
     const bookId = req.params.id;
-    const { name, NoPages, Publisher, Description, imageUrl, copies } = req.body;
+    const { name, NoPages, Publisher, Description, imageUrl, copies, category } = req.body;
 
     const book = await Book.findById(bookId);
     if (!book) {
@@ -280,6 +268,7 @@ router.put('/:id', async (req, res) => {
     if (Publisher) book.Publisher = Publisher;
     if (Description) book.Description = Description;
     if (imageUrl) book.imageUrl = imageUrl;
+    if (category) book.category = category; // Cập nhật category
 
     await book.save();
 
