@@ -18,8 +18,11 @@ const Color confirmButton = Color(0xFF508D4E); // for hold ticket, YES and submi
 const Color cancelButton = Color(0xFFFA7070); // for cancel ticket and NO
 const Color rateButton = Color(0xFFCA7373);
 const Color viewButton = Color(0xFF365486);
-const Color loginButton = Color(0xFF365486);
+const Color loginButton = Color.fromARGB(255, 85, 139, 255);
 const Color logoutButton = Color(0xFFFA7070);
+
+// text color
+const Color placeholderText = Color.fromARGB(255, 167, 167, 167);
 
 const apiUrl = 'http://192.168.22.170:3001/api';
 

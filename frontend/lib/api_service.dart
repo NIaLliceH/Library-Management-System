@@ -184,7 +184,7 @@ class ApiService {
 
     if (response.statusCode == 200) {
       return Student.fromJson(jsonDecode(response.body));
-    } else if (response.statusCode == 401) {
+    } else if (response.statusCode == 400) { // !!! should be 401
       throw 'Invalid username or password';
     } else {
       throw 'Failed to login';
