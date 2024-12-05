@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/api_service.dart';
 import 'package:frontend/constants.dart';
-import 'package:frontend/models/user.dart';
+import 'package:frontend/globals.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -13,11 +13,11 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   String _email = '';
   String _password = '';
-  bool _obsecureText = true;
+  bool _obscuredText = true;
 
   void _togglePasswordVisibility() {
     setState(() {
-      _obsecureText = !_obsecureText;
+      _obscuredText = !_obscuredText;
     });
   }
 
@@ -121,7 +121,7 @@ class _LoginPageState extends State<LoginPage> {
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: TextFormField(
-                        obscureText: _obsecureText,
+                        obscureText: _obscuredText,
                         decoration: InputDecoration(
                           border: InputBorder.none,
                           hintStyle: TextStyle(
@@ -131,7 +131,7 @@ class _LoginPageState extends State<LoginPage> {
                           prefixIcon: Icon(Icons.lock),
                           suffixIcon: IconButton(
                             icon: Icon(
-                              _obsecureText
+                              _obscuredText
                                   ? Icons.visibility_off
                                   : Icons.visibility,
                             ),
@@ -148,30 +148,29 @@ class _LoginPageState extends State<LoginPage> {
                   ],
                 ),
               ),
-              // submit button
+              // submit button -> call loginStudent()
               TextButton(
                   style: TextButton.styleFrom(
                     backgroundColor: loginButton,
                     minimumSize: Size(200, 50),
                   ),
-                  onPressed: () {
-                    // call login api to get user info, display error if login failed
-                    ApiService.loginStudent(_email, _password).then((user) {
-                      // navigate to HomePage screen
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => HomePage(userName: user.name),
-                        ),
-                      )
-                    }).catchError((error) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(error.toString()),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
-                    });
+                  onPressed: () async {
+                    try {
+                      final user = await ApiService.loginStudent(_email, _password);
+                      if (context.mounted) {
+                        thisUser = user;
+                        Navigator.pushNamed(context, '/main');
+                      }
+                    } catch (e) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar( // !!! AlertDialog or
+                            content: Text(e.toString()),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
+                    }
                   },
                   child: Text(
                     'Login',

@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:frontend/constants.dart';
 import 'package:frontend/screens/borrow_ticket_view.dart';
 import '../api_service.dart';
+import '../globals.dart';
 import '../utils.dart';
 
 class HistoryPage extends StatelessWidget {
-  final String userId;
-  const HistoryPage({super.key, required this.userId});
+  final String userId = thisUser!.id;
+  HistoryPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +41,6 @@ class HistoryPage extends StatelessWidget {
           } else {
             var tickets = snapshot.data!;
             tickets = Utils.sortBorrowTicketsByPriority(tickets);
-            // add you are borrowing no books message
             return Padding(
               padding: EdgeInsets.only(right: 8, left: 8, top: 10),
               child: ListView(
@@ -65,7 +65,7 @@ class HistoryPage extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => BorrowTicketView(userId: userId, ticket: tickets[index]),
+                              builder: (context) => BorrowTicketView(ticket: tickets[index]),
                             ),
                           );
                         },

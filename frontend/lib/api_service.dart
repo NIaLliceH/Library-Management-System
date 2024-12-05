@@ -187,11 +187,11 @@ class ApiService {
     } else if (response.statusCode == 400) { // !!! should be 401
       throw 'Invalid username or password';
     } else {
-      throw 'Failed to login';
+      throw 'Other status code';
     }
   }
 
-  static Future<void> createHoldTicket(String userId, String bookId) async {
+  static Future<String> createHoldTicket(String userId, String bookId) async {
     final response = await http.post(
       Uri.parse('$baseUrl/$userId/hold'),
       headers: <String, String>{
@@ -203,9 +203,9 @@ class ApiService {
     );
 
     if (response.statusCode == 200) {
-      throw 'Hold ticket exists';
+      throw 'Hold ticket exists'; // this should not happen
     } else if (response.statusCode == 201) {
-      return;
+      return 'Hold ticket created successfully';
     } else {
       throw 'Failed to create hold ticket';
     }
@@ -230,7 +230,7 @@ class ApiService {
     }
   }
 
-  static Future<void> rateBook(String bookId, String userId, int rating) async {
+  static Future<String> rateBook(String bookId, String userId, int rating) async {
     final response = await http.post(
       Uri.parse('$baseUrl/books/$bookId/rate'),
       headers: <String, String>{
@@ -243,7 +243,7 @@ class ApiService {
     );
 
     if (response.statusCode == 200) {
-      return;
+      return 'Book rated successfully';
     } else {
       throw 'Failed to rate book';
     }

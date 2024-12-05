@@ -1,13 +1,14 @@
 import 'package:frontend/constants.dart';
 import 'package:flutter/material.dart';
+import 'package:frontend/globals.dart';
 import 'package:frontend/screens/search_result.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:frontend/api_service.dart';
 import 'category_result.dart';
 
 class HomePage extends StatefulWidget {
-  final String userName;
-  const HomePage({super.key, required this.userName});
+  final String userName = thisUser!.name;
+  HomePage({super.key});
 
   @override
   State<StatefulWidget> createState() => _HomePageState();

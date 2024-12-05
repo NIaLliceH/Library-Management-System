@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/constants.dart';
+import 'package:frontend/globals.dart';
 import 'package:frontend/models/hold_ticket.dart';
 import '../api_service.dart';
 import '../utils.dart';
 import 'hold_ticket_view.dart';
 
 class TicketsPage extends StatefulWidget {
-  final String userId;
-  const TicketsPage({super.key, required this.userId});
+  final String userId = thisUser!.id;
+  TicketsPage({super.key});
 
   @override
   State<StatefulWidget> createState() => _TicketsPageState();
@@ -43,7 +44,7 @@ class _TicketsPageState extends State<TicketsPage> {
         ),
       ),
       body: FutureBuilder(
-        future: ApiService.getHoldTicketsOfUser(widget.userId),
+        future: ticketsFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(
@@ -60,14 +61,13 @@ class _TicketsPageState extends State<TicketsPage> {
           } else {
             var tickets = snapshot.data!;
             tickets = Utils.sortHoldTicketsByPriority(tickets);
-            // add you are borrowing no books message
             return Padding(
               padding: EdgeInsets.only(right: 8, left: 8, top: 10),
               child: ListView(
                 children: [
-                  // notice message
+                  // notice message for holding books (not canceled and not expired)
                   Text(
-                    'You are holding ${tickets.where((ticket) => !ticket.canceled).length} / $maxHoldTicketAmt books',
+                    'You are holding ${tickets.where((ticket) => !ticket.canceled && ticket.dueDate.isAfter(DateTime.now())).length} / $maxHoldTicketAmt books',
                     style: TextStyle(
                       fontSize: 15,
                       // fontWeight: FontWeight.w700,
@@ -89,6 +89,7 @@ class _TicketsPageState extends State<TicketsPage> {
                             ),
                           );
 
+                          // need to refresh the list if the ticket is canceled
                           if (result == true) {
                             _refreshTickets(); // refresh the list on return
                           }

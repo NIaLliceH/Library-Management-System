@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/constants.dart';
+import 'package:frontend/globals.dart';
 import 'package:frontend/screens/history_page.dart';
 import 'package:frontend/screens/home_page.dart';
 import 'package:frontend/screens/login_page.dart';
@@ -23,14 +24,20 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         fontFamily: GoogleFonts.openSans().fontFamily,
       ),
-      home: LoginPage(), // always start with login page
+      initialRoute: '/login',
+      routes: {
+        '/': (context) => MainPage(),
+        '/login': (context) => LoginPage(),
+      },
+      // home: LoginPage(), // always start with login page
     );
   }
 }
 
 class MainPage extends StatefulWidget {
-  final User user;
-  const MainPage({super.key, required this.user});
+  final User user = thisUser!;
+
+  MainPage({super.key});
 
   @override
   State<StatefulWidget> createState() => _MainPageState();
@@ -45,10 +52,10 @@ class _MainPageState extends State<MainPage> {
   void initState() {
     super.initState();
     _pages = <Widget>[
-      HomePage(userName: widget.user.name),
-      TicketsPage(userId: widget.user.id),
-      HistoryPage(userId: widget.user.id),
-      ProfilePage(user: widget.user),
+      HomePage(),
+      TicketsPage(),
+      HistoryPage(),
+      ProfilePage(),
     ];
   }
 

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/api_service.dart';
-import 'package:frontend/screens/hold_form.dart';
+import 'package:frontend/globals.dart';
 import 'package:frontend/utils.dart';
 import 'package:frontend/constants.dart';
 import 'package:frontend/models/book.dart';
@@ -87,14 +87,68 @@ class BookView extends StatelessWidget {
                       onPressed: isButtonDisabled ?
                       null
                       : () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => HoldForm(book: book),
-                          ),
+                        showDialog(
+                          context: context,
+                          builder: (context) {
+                            final DateTime now = DateTime.now();
+                            final DateTime deadline = now.add(Duration(days: maxHoldTicketDays));
+
+                            return AlertDialog(
+                              title: Text('Hold Ticket Information'),
+                              content: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Utils.displayInfo("Title", book.title),
+                                  Utils.displayInfo("Author", book.author),
+                                  Utils.displayInfo("Edition", book.edition),
+                                  Utils.displayInfo("Start holding date", now),
+                                  Utils.displayInfo("Due date", deadline),
+                                  Text("You must come to the library to borrow "
+                                      "this book before the due date, otherwise "
+                                      "your hold ticket will be canceled."),
+                                ],
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                  },
+                                  child: Text('Cancel'),
+                                ),
+                                ElevatedButton(
+                                  onPressed: () async {
+                                    try {
+                                      final message = await ApiService.createHoldTicket(thisUser!.id, bookId);
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: Text(message),
+                                            backgroundColor: greenStatus,
+                                          ),
+                                        );
+                                        Navigator.pop(context); // close dialog
+                                        Navigator.pop(context); // return to previous screen
+                                      }
+                                    }
+                                    catch (e) {
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: Text('Error: $e'),
+                                            backgroundColor: redStatus,
+                                          ),
+                                        );
+                                      }
+                                    }
+                                  },
+                                  child: Text('Confirm'),
+                                )
+                              ],
+                            );
+                          }
                         );
                       },
-
                     ),
                   )
                 ],
