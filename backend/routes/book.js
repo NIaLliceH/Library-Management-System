@@ -179,21 +179,38 @@ router.get('/top-rated', async (req, res) => {
       };
     });
 
-
+    
     // Sắp xếp và chọn 5 sách có đánh giá cao nhất
-    const topRatedBooks = books
+    const topRatedBooks = booksWithAvgRate
       .sort((a, b) => b.AvgRate - a.AvgRate)
-      .slice(0, 5)
-      .map(book => ({
-        _id: book._id,
-        name: book.name,
-        avgRating: book.avgRate ? book.avgRate : null,
-        imageUrl: book.imageUrl, 
-      }));
+      .slice(0, 5);
+
+    // Thêm thông tin về số bản sao có sẵn và tác giả
+    const topRatedBooksWithDetails = await Promise.all(
+      topRatedBooks.map(async book => {
+        const [authors, copies] = await Promise.all([
+          AuthorBook.find({ ID_book: book._id }, 'author').lean(),
+          CopyBook.find({ ID_book: book._id, status: 'available' }).lean()
+        ]);
+
+        const NoAvaiCopies = copies.length;
+
+        return {
+          bookId: book._id,
+          name: book.name,
+          avgRating: book.AvgRate,
+          imageUrl: book.imageUrl || null,
+          category: book.category,
+          authors: authors.length ? authors.map(a => a.author) : null,
+          edition: book.edition || null,
+          NoAvaiCopies,
+        };
+      })
+    );
 
     res.json({
       message: "Success",
-      data:topRatedBooks,
+      data: topRatedBooksWithDetails,
     });
   } catch (error) {
     res.status(500).json({ message: 'Lỗi khi lấy sách có đánh giá cao nhất', error });
