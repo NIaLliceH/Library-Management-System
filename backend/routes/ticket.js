@@ -31,30 +31,25 @@ router.get('/:id_user/hold', async (req, res) => {
                 const authors = authorData.map(author => author.author); 
                             
                 //const author = authorData ? authorData.author : 'Unknown';
-
-                // Lấy thông tin Category từ CategoryBook
-                const holdData = await CategoryBook.findOne({ ID_book: ticket.ID_book });
-                const category = holdData ? holdData.Category : 'Unknown';
-
-                // Lấy thông tin Category từ CategoryBook
-                const nameData = await Book.findOne({ _id: ticket.ID_book });
                 
+                const nameData = await Book.findOne({ _id: ticket.ID_book });
+
                 const nameBook = nameData ? nameData.name : 'Unknown';
                 //const urlBook = nameData ? nameData.imageUrl : 'Unknown';
 
-                retu = {
+                data = {
                     "holdTicket_ID": ticket._id,
                     // "bookID": ticket.ID_book, 
                     "title": nameBook, 
                     "author": authors, 
-                    "category": category, 
+                    "category": nameData.category, 
                     "status": ticket.status, 
                     "createdDate": ticket.day_create, 
                     "expiredDate": ticket.day_expired,
                     "dayLeft": daysLeft
                 }
 
-                return retu;
+                return data;
             })
         );
 
@@ -78,14 +73,12 @@ router.get('/hold_infor/:id_ticket', async (req, res) => {
         const authorData = await AuthorBook.find({ ID_book: borrowTicket_one.ID_book }).exec();
         const authors = authorData.map(author => author.author); 
 
-        const holdData = await CategoryBook.findOne({ ID_book: borrowTicket_one.ID_book });
-        const category = holdData ? holdData.Category : 'Unknown';
 
         const url = dataBook.imageUrl ? dataBook.imageUrl : "Unknown";
         const edi = dataBook.edition ? dataBook.edition : "Unknown";
 
         
-        retu = { 
+        data = { 
             // "bookID": borrowTicket_one.ID_book, 
             // "createdDate": borrowTicket_one.day_create, 
             "expiredDate": borrowTicket_one.day_expired, 
@@ -93,7 +86,7 @@ router.get('/hold_infor/:id_ticket', async (req, res) => {
             "imageUrl": url, 
             "title": dataBook.name, 
             "author": authors, 
-            "category": category, 
+            "category": dataBook.category, 
             "edition": edi,
             "canceledDate": borrowTicket_one.cancelAt,
         }
@@ -101,7 +94,7 @@ router.get('/hold_infor/:id_ticket', async (req, res) => {
 
 
         // Trả kết quả về client
-        res.status(200).json(retu);
+        res.status(200).json(data);
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Something went wrong', error: err.message });
@@ -135,20 +128,16 @@ router.get('/:id_user/borrow', async (req, res) => {
                 const authorData = await AuthorBook.find({ ID_book: id_book }).exec();
                 const authors = authorData.map(author => author.author); 
 
-                // Lấy thông tin Category từ CategoryBook
-                const holdData = await CategoryBook.findOne({ ID_book: id_book });
-                const category = holdData ? holdData.Category : 'Unknown';
 
                 // Lấy thông tin Category từ CategoryBook
                 const nameData = await Book.findOne({ _id: id_book });
                 const nameBook = nameData ? nameData.name : 'Unknown';
-                const urlBook = nameData ? nameData.imageUrl : 'Unknown';
 
                 const returnedDate = ticket.returnedDate ? ticket.returnedDate : "Not Yet";
 
 
 
-                retu = {
+                data = {
                     "borrowTicket_ID": ticket._id,
                     "title": nameBook, 
                     "author": authors, 
@@ -158,22 +147,11 @@ router.get('/:id_user/borrow', async (req, res) => {
                     "status": ticket.status, 
                     "dayLeft": daysLeft
                 }
-
-                return retu;
+                return data;
             })
         );
-        // const response = borrowTickets.map(ticket => {
-        //     const expired = now > ticket.return_day;   //Check het han
-        //     const daysLeft = Math.max(0, Math.ceil((ticket.return_day - now) / (1000 * 60 * 60 * 24))); // Tính ngày còn lại
-            
-        //     return {
-        //         ...ticket._doc, 
-        //         expired,
-        //         daysLeft,
-        //     };
-        // });
 
-        res.status(200).json(retu);
+        res.status(200).json(response);
     } catch(err) {
         console.log(err);
         res.status(500).json({message: 'Something went wrong', error: err.message});
@@ -193,17 +171,14 @@ router.get('/borrow_infor/:id_ticket', async (req, res) => {
         const authorData = await AuthorBook.find({ ID_book: copy.ID_book }).exec();
         const authors = authorData.map(author => author.author); 
 
-        const holdData = await CategoryBook.findOne({ ID_book: copy.ID_book });
-        const category = holdData ? holdData.Category : 'Unknown';
 
         const url = dataBook.imageUrl ? dataBook.imageUrl : "Unknown";
         const edi = dataBook.edition ? dataBook.edition : "Unknown";
         const nameBo = dataBook.name ? dataBook.name : "Unknown";
 
         
-        retu = { 
+        data = { 
             "bookID": dataBook._id, 
-            // "copyId": borrowTicket_one.ID_copy, 
             "createdDate": borrowTicket_one.borrow_day, 
             "expiredDate": borrowTicket_one.return_day, 
             "status": borrowTicket_one.status, 
@@ -211,13 +186,13 @@ router.get('/borrow_infor/:id_ticket', async (req, res) => {
             "imageUrl": url, 
             "title": nameBo, 
             "author": authors, 
-            "category": category, 
+            "category": dataBook.category, 
             "edition": edi, 
             "hasRated": borrowTicket_one.rated 
         }
 
         // Trả kết quả về client
-        res.status(200).json(retu);
+        res.status(200).json(data);
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Something went wrong', error: err.message });
@@ -233,9 +208,9 @@ router.post('/:id_user/hold', async (req, res) => {
         
 
         // Kiểm tra số lượng holdTicket có status = 0
-        const activeHoldTickets = await holdTicket.countDocuments({ ID_student: id_user, status: 0 });
+        const activeHoldTickets = await holdTicket.countDocuments({ ID_student: id_user, status: "valid" });
         if (activeHoldTickets >= 5) {
-            return res.status(400).json({ message: 'Thất bại, Vượt quá số lượng hold là 5' });
+            return res.status(400).json({ message: 'Không thể giữ nhiều hơn 5 cuốn sách' });
         }
 
         // Hệ thống tự động gán thời gian tạo và thời gian hết hạn
@@ -245,7 +220,7 @@ router.post('/:id_user/hold', async (req, res) => {
 
         // Tạo một tài liệu mới cho HoldTicket
         const newHoldTicket = new holdTicket({
-            status: "0",
+            status: "valid",
             day_create,
             day_expired,
             quantity,
@@ -262,17 +237,17 @@ router.post('/:id_user/hold', async (req, res) => {
         if (holdTic) {
             return res.status(200).json({ 
                 exists: true, 
-                message: 'The book is already in the hold tickets.' 
+                message: 'Bạn đã thực hiện đặt chỗ cuốn sách này rồi' 
             });
         }
 
         // Lưu vào database
         const savedTicket = await newHoldTicket.save();
 
-        res.status(201).json({ message: 'Hold ticket created successfully!', data: savedTicket });
+        res.status(201).json({ message: 'Tạo thẻ giữ sách thành công', data: savedTicket });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ message: 'Error creating hold ticket', error: err.message });
+        res.status(500).json({ message: 'Có lỗi xảy ra', error: err.message });
     }
 });
 
@@ -292,16 +267,16 @@ router.post('/:id_user/borrow', async (req, res) => {
         const ID_book = dataBook.ID_book;
 
 
-        // Kiểm tra trùng ID_book trong các BorrowTicket của sinh viên
+        // Kiểm tra trùng ID_book trong các HoldTicket của sinh viên
         const existingTicket = await holdTicket.findOne({
             ID_student: id_user,
             ID_book: ID_book, // Trùng sách
-            status: "0" // Chỉ kiểm tra những vé chưa xử lý
+            status: "valid" // Chỉ kiểm tra những vé chưa xử lý
         });
 
         if (existingTicket) {
-            // Nếu đã tồn tại vé mượn với cùng ID_book, cập nhật status
-            existingTicket.status = "1";
+            // Nếu đã tồn tại vé hold với cùng ID_book, cập nhật status
+            existingTicket.status = "cancel";
             existingTicket.cancelAt = borrow_day;
             await existingTicket.save();
         }
@@ -315,14 +290,14 @@ router.post('/:id_user/borrow', async (req, res) => {
         if (borrowTic) {
             return res.status(200).json({ 
                 exists: true, 
-                message: 'The copy book is already in the borrow tickets.' 
+                message: 'Cuốn sách này đang mượn rồi' 
             });
         }
 
 
         // Tạo một tài liệu mới cho BorrowTicket
         const newBorrowTicket = new borrowTicket({
-            status: "0",
+            status: "borrowing",
             borrow_day,
             return_day,
             no_day_left: borrowDuration, // Số ngày mượn còn lại ban đầu là toàn bộ thời gian mượn
@@ -331,8 +306,6 @@ router.post('/:id_user/borrow', async (req, res) => {
             ID_admin,
         });
 
-        
-
         // Lưu vào database
         const savedTicket = await newBorrowTicket.save();
 
@@ -340,10 +313,10 @@ router.post('/:id_user/borrow', async (req, res) => {
         data_COuntborrow.borrowCount = data_COuntborrow.borrowCount + 1;
         await data_COuntborrow.save();
 
-        res.status(201).json({ message: 'Borrow ticket created successfully!', data: savedTicket });
+        res.status(201).json({ message: 'Tạo thẻ mượn sách thành công', data: savedTicket });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ message: 'Error creating borrow ticket', error: err.message });
+        res.status(500).json({ message: 'Lỗi xảy ra', error: err.message });
     }
 });
 
@@ -356,78 +329,18 @@ router.post('/cancel/:ticketID', async (req, res) => {
         const dateNow = new Date();
         const dataHold = await HoldTicket.findOne({ _id: ticketID });
         if (dataHold) {
-            dataHold.status = "1"; 
+            dataHold.status = "cancel"; 
             dataHold.cancelAt = dateNow;
             dataHold.cancelBy = ID_user;
             await dataHold.save(); // Lưu thay đổi vào MongoDB
         }
 
-        res.status(201).json({ message: 'Ticket has been canceled'});
+        res.status(201).json({ message: 'Huỷ giữ sách thành công'});
         
     } catch {
         console.error(err);
-        res.status(500).json({ message: 'Some thing went wrong', error: err.message });
+        res.status(500).json({ message: 'Có lỗi xảy ra', error: err.message });
     }
 });
-
-router.get('/most-borrowed', async (req, res) => {
-    try {
-      // Lấy giới hạn từ body của request (nếu không có, mặc định là 10)
-      const limit = req.body.limit || 10;
-  
-      // Thực hiện logic lấy danh sách sách được mượn nhiều nhất
-      const mostBorrowedBooks = await borrowTicket.aggregate([
-        {
-          $lookup: {
-            from: 'copybooks', // Tên collection của CopyBook
-            localField: 'ID_copy',
-            foreignField: '_id',
-            as: 'copyBookInfo',
-          },
-        },
-        {
-          $unwind: '$copyBookInfo',
-        },
-        {
-          $lookup: {
-            from: 'books', // Tên collection của Book
-            localField: 'copyBookInfo.ID_book',
-            foreignField: '_id',
-            as: 'bookInfo',
-          },
-        },
-        {
-          $unwind: '$bookInfo',
-        },
-        {
-          $group: {
-            _id: '$bookInfo._id',
-            name: { $first: '$bookInfo.name' },
-            imageUrl: { $first: '$bookInfo.imageUrl'},
-            borrowCount: { $sum: 1 },
-          },
-        },
-        {
-          $sort: { borrowCount: -1 }, // Sắp xếp giảm dần theo số lượt mượn
-        },
-        {
-          $limit: limit, // Giới hạn số kết quả
-        },
-      ]);
-  
-      // Trả về kết quả
-      res.status(200).json({ 
-        message: 'Most Borrowed Books', 
-        data: mostBorrowedBooks 
-      });
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ 
-        message: 'Something went wrong', 
-        error: err.message 
-      });
-    }
-  });
-
 
 module.exports = router;
