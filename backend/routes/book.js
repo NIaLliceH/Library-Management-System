@@ -150,26 +150,50 @@ router.put('/:id', async (req, res) => {
 // Get a book by ID
 router.get('/:id', async (req, res) => {
   try {
+    // Tìm sách theo ID
     const book = await Book.findById(req.params.id).lean();
-    if (book) {
-      const copies = await CopyBook.find({ ID_book: book._id });
-
-      // Thêm trạng thái canBorrow
-      book.copies = copies.map(copy => ({
-        ...copy.toObject(),
-        canBorrow: copy.status === "available" ? 1 : 0 // Kiểm tra trạng thái
-      }));
-
-      book.authors = await AuthorBook.find({ ID_book: book._id }, 'author');
-
-      res.json(book);
-    } else {
-      res.status(404).json({ message: 'Không tìm thấy sách' });
+    if (!book) {
+      return res.status(404).json({ message: 'Không tìm thấy sách' });
     }
+
+    // Tìm các bản sao của sách
+    const copies = await CopyBook.find({ ID_book: book._id }).lean();
+
+    // Tính tổng số bản sao và số bản có thể mượn
+    const totalCopies = copies.length;
+    const availableCopies = copies.filter(copy => copy.status === "available").length;
+    // Kiểm tra xem có thể mượn được không
+    const canBorrow = copies.some(copy => copy.status === "available");
+
+    // Tìm các tác giả của sách
+    const authors = await AuthorBook.find({ ID_book: book._id }, 'author').lean();
+
+    // Chuẩn bị đối tượng phản hồi
+    const response = {
+      bookId: book._id,
+      name: book.name,
+      authors: authors.length > 0 ? authors.map(a => a.author) : ["No author"], // Danh sách tác giả
+      category: book.category,
+      publisher: book.Publisher || "Unknown publisher",
+      noCopies: totalCopies,
+      noAvaiCopies: availableCopies,
+      noPages: book.NoPages,
+      avgRating: book.avgRate ? book.avgRate : "0",
+      description: book.Description || "No description available",
+      edition: book.edition ? book.edition : "none edition",
+      publishDate: book.datePublish ? book.datePublish : "none Date",
+      canBorrow: canBorrow ? 1 : 0
+    };
+
+    // Trả về JSON
+    return res.json(response);
   } catch (error) {
-    res.status(500).json({ message: 'Lỗi khi lấy thông tin sách', error });
+    // Xử lý lỗi
+    return res.status(500).json({ message: 'Lỗi khi lấy thông tin sách', error });
   }
 });
+
+
 // POST route to add a new book
 router.post('/', async (req, res) => {
   try {

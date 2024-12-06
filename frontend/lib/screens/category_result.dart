@@ -59,7 +59,7 @@ class CategoryResult extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => BookView(bookId: books[index].id, ),
+                        builder: (context) => BookView(bookId: books[index].id),
                       ),
                     );
                   },

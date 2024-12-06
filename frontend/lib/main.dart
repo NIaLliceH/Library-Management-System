@@ -8,14 +8,20 @@ import 'package:frontend/screens/profile_page.dart';
 import 'package:frontend/screens/tickets_page.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import 'auth_service.dart';
 import 'models/user.dart';
 
-void main() {
-  runApp(MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  // check if user is logged in
+  bool isLoggedIn = await AuthService.getLoginState();
+  runApp(MyApp(isLoggedIn: isLoggedIn));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final bool isLoggedIn;
+
+  const MyApp({super.key, required this.isLoggedIn});
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -24,9 +30,9 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         fontFamily: GoogleFonts.openSans().fontFamily,
       ),
-      initialRoute: '/login',
+      initialRoute: isLoggedIn ? '/' : '/login',
       routes: {
-        '/': (context) => MainPage(),
+        '/': (context) =>  MainPage(),
         '/login': (context) => LoginPage(),
       },
       // home: LoginPage(), // always start with login page

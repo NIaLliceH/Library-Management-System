@@ -102,7 +102,7 @@ router.post('/login', async (req, res) => {
     const stu = await Student.findOne({ID: account._id});
     const user = await User.findOne({ID_user: account._id});
 
-    const retu = {
+    const data = {
       "ID_user": user.ID_user, 
       "name": user.name, 
       "avatar": user.avatar, 
@@ -118,7 +118,7 @@ router.post('/login', async (req, res) => {
       "status": account.Status, 
     }
     
-    res.json({message: 'Dang nhap thanh cong', retu});
+    res.json({message: 'Dang nhap thanh cong', data});
   } catch (error) {
     res.status(500).json({ message: 'Lỗi khi đăng nhập', error });
   }

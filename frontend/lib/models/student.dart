@@ -1,9 +1,10 @@
+import 'package:frontend/globals.dart';
 import 'package:frontend/models/user.dart';
 
 class Student extends User {
   final String mssv;
   final String faculty;
-  final DateTime dob;
+  final String dob;
 
   Student({
     required super.id,
@@ -21,8 +22,9 @@ class Student extends User {
 
   factory Student.fromJson(Map<String, dynamic> json) {
     String avatarUrl;
-    if (json['avatarUrl'] != null) {
-      avatarUrl = json['avatarUrl'];
+    if (json['avatar'] != null) {
+      // avatarUrl = json['avatar'];
+      avatarUrl = 'https://drive.google.com/uc?export=view&id=1jIKx3DphrLDpPp68Co953Cm6Z_S8daOP'; // testing
     }
     else if (json['gender'] == 'female') {
       avatarUrl = 'https://drive.google.com/uc?export=view&id=1jIKx3DphrLDpPp68Co953Cm6Z_S8daOP';
@@ -32,17 +34,17 @@ class Student extends User {
     }
 
     return Student(
-      id: json['_id'],
-      name: json['name'],
-      email: json['email'],
-      gender: json['gender'],
+      id: json['ID_user'],
+      name: json['name'] ?? 'N/A',
+      email: json['email'] ?? 'N/A',
+      gender: json['gender'] ?? 'N/A',
       avatarUrl: avatarUrl,
-      address: json['address'],
-      phoneNum: json['phoneNum'],
+      address: json['address'] ?? 'N/A',
+      phoneNum: json['phoneNum'] ?? 'N/A',
       // role: json['role'],
-      mssv: json['mssv'],
-      faculty: json['faculty'],
-      dob: DateTime.parse(json['dob']),
+      mssv: json['MSSV'] ?? 'N/A',
+      faculty: json['faculty'] ?? 'N/A',
+      dob: json['dob'] ?? 'N/A',
     );
   }
 }

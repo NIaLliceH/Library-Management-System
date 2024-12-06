@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/api_service.dart';
+import 'package:frontend/auth_service.dart';
 import 'package:frontend/constants.dart';
 import 'package:frontend/globals.dart';
 
@@ -11,8 +12,11 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  String _email = '';
-  String _password = '';
+  String _email = 'khanh@hcmut.edu.vn'; // testing
+  String _password = '123';
+
+  // String _email = '';
+  // String _password = '';
   bool _obscuredText = true;
 
   void _togglePasswordVisibility() {
@@ -27,10 +31,11 @@ class _LoginPageState extends State<LoginPage> {
       body: SingleChildScrollView(
         child: Container(
           padding: EdgeInsets.all(30),
+          height: MediaQuery.of(context).size.height,
           decoration: BoxDecoration(
             image: DecorationImage(
-                image: AssetImage('assets/images/background.jpg'),
-                fit: BoxFit.fill
+                image: AssetImage('assets/images/background2.jpg'),
+                fit: BoxFit.cover,
             ),
           ),
           child: Column(
@@ -104,7 +109,7 @@ class _LoginPageState extends State<LoginPage> {
                       child: TextFormField(
                         decoration: const InputDecoration(
                           border: InputBorder.none,
-                          hintText: 'username',
+                          hintText: 'email',
                           hintStyle: TextStyle(
                               color: Color.fromARGB(255, 201, 201, 201),
                           ),
@@ -157,14 +162,15 @@ class _LoginPageState extends State<LoginPage> {
                   onPressed: () async {
                     try {
                       final user = await ApiService.loginStudent(_email, _password);
+                      thisUser = user;
+                      await AuthService.saveLoginState(true);
                       if (context.mounted) {
-                        thisUser = user;
-                        Navigator.pushNamed(context, '/main');
+                        Navigator.pushReplacementNamed(context, '/');
                       }
                     } catch (e) {
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar( // !!! AlertDialog or
+                          SnackBar( // !!! AlertDialog
                             content: Text(e.toString()),
                             backgroundColor: Colors.red,
                           ),

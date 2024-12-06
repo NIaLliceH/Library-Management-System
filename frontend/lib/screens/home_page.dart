@@ -4,24 +4,24 @@ import 'package:frontend/globals.dart';
 import 'package:frontend/screens/search_result.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:frontend/api_service.dart';
+import 'book_view.dart';
 import 'category_result.dart';
 
 class HomePage extends StatefulWidget {
-  final String userName = thisUser!.name;
-  HomePage({super.key});
+  const HomePage({super.key});
 
   @override
   State<StatefulWidget> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  String userInput = '';
+  String _userInput = '';
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: ListView(
-        padding: EdgeInsets.only(left: 25, right: 25, top: 25),
+        padding: EdgeInsets.only(left: 25, right: 25, top: 40),
         physics: BouncingScrollPhysics(),
         children: [
           // Greeting user
@@ -29,14 +29,14 @@ class _HomePageState extends State<HomePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Hi, ${widget.userName}',
+                'Hi, ${thisUser!.name}',
                 style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
                     color: Colors.grey),
               ),
               Text(
-                'Welcome to BKLib!',
+                'Explore the world of books',
                 style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
@@ -62,7 +62,7 @@ class _HomePageState extends State<HomePage> {
                   child: TextField(
                     onChanged: (value) {
                       setState(() {
-                        userInput = value;
+                        _userInput = value;
                       });
                     },
                     onSubmitted: (value) {
@@ -91,7 +91,7 @@ class _HomePageState extends State<HomePage> {
                     alignment: Alignment.centerRight,
                     child: ElevatedButton(
                         onPressed: () {
-                          final query = userInput.trim();
+                          final query = _userInput.trim();
                           if (query.isNotEmpty) {
                             Navigator.push(
                               context,
@@ -271,15 +271,25 @@ class BookListView extends StatelessWidget {
               physics: BouncingScrollPhysics(),
               scrollDirection: Axis.horizontal,
               itemBuilder: (context, index) {
-                return Container(
-                    width: 160,
-                    margin: EdgeInsets.only(right: 15),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      image: DecorationImage(
-                          fit: BoxFit.cover,
-                          image: AssetImage(books[index].imageUrl)),
-                    ));
+                return InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => BookView(bookId: books[index].id),
+                      ),
+                    );
+                  },
+                  child: Container(
+                      width: 160,
+                      margin: EdgeInsets.only(right: 15),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        image: DecorationImage(
+                            fit: BoxFit.cover,
+                            image: NetworkImage(books[index].imageUrl)),
+                      )),
+                );
               },
             );
           }

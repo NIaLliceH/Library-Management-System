@@ -33,6 +33,7 @@ class _TicketsPageState extends State<TicketsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         toolbarHeight: 60,
         backgroundColor: kBase2,
         title: Text(

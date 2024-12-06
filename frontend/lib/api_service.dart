@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:frontend/models/book.dart';
 import 'package:frontend/constants.dart';
 
+import 'globals.dart';
 import 'models/admin.dart';
 import 'models/student.dart';
 import 'models/user.dart';
@@ -64,7 +65,10 @@ class ApiService {
       List<dynamic> body = jsonDecode(response.body);
       List<Book> books = body.map((dynamic item) => Book.fromBasicJson(item)).toList();
       return books;
-    } else {
+    } else if (response.statusCode == 404) {
+      throw 'No book found';
+    }
+    else {
       throw 'Failed to load books';
     }
   }
@@ -93,10 +97,10 @@ class ApiService {
   }
 
   static Future<List<String>> getAllCategories() async {
-    final response = await http.get(Uri.parse('$baseUrl/categories'));
+    final response = await http.get(Uri.parse('$baseUrl/books/categories'));
     if (response.statusCode == 200) {
-      List<dynamic> body = jsonDecode(response.body);
-      List<String> categories = body.map((dynamic item) => item.toString()).toList();
+      final data = jsonDecode(response.body)['categories']; // !!! data
+      List<String> categories = data.map<String>((dynamic item) => item.toString()).toList();
       return categories;
     } else {
       throw 'Failed to load categories';
@@ -171,7 +175,7 @@ class ApiService {
 
   static Future<User> loginStudent(String username, String password) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/account/login'),
+      Uri.parse('$baseUrl/authen/login'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
@@ -183,7 +187,8 @@ class ApiService {
     );
 
     if (response.statusCode == 200) {
-      return Student.fromJson(jsonDecode(response.body));
+      final data = jsonDecode(response.body)['data'];
+      return Student.fromJson(data);
     } else if (response.statusCode == 400) { // !!! should be 401
       throw 'Invalid username or password';
     } else {

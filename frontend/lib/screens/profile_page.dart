@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/auth_service.dart';
 import 'package:frontend/globals.dart';
 import '../constants.dart';
 import '../models/user.dart';
@@ -11,6 +12,7 @@ class ProfilePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         toolbarHeight: 60,
         backgroundColor: kBase2,
         title: Text(
@@ -67,9 +69,13 @@ class ProfilePage extends StatelessWidget {
               Align(
                 alignment: Alignment.bottomCenter,
                 child: ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
                     // Add logout functionality later?
-                    Navigator.pushReplacementNamed(context, '/login'); // cant go back
+                    thisUser = null;
+                    await AuthService.clearLoginState();
+                    if (context.mounted) {
+                      Navigator.pushReplacementNamed(context, '/login'); // cant go back
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.redAccent,
