@@ -15,7 +15,7 @@ router.get('/', async (req, res) => {
       // Tính toán NoCopies
       const totalCopies = await CopyBook.countDocuments({ ID_book: book._id });
       const borrowedOrReservedCopies = await CopyBook.countDocuments({ ID_book: book._id, status: { $in: ['borrowed', 'reserved'] } });
-      const NoAvaiCopies = totalCopies - borrowedOrReservedCopies;
+      const noAvaiCopies = totalCopies - borrowedOrReservedCopies;
       
       result.push({
         bookId: book._id,
@@ -24,7 +24,7 @@ router.get('/', async (req, res) => {
         category: book.category,
         authors: authors.map(a => a.author),
         edition: book.edition,
-        NoAvaiCopies,
+        noAvaiCopies,
       });
     }
 
@@ -64,7 +64,7 @@ router.get('/category/:category', async (req, res) => {
       // Tính toán NoCopies
       const totalCopies = await CopyBook.countDocuments({ ID_book: book._id });
       const borrowedOrReservedCopies = await CopyBook.countDocuments({ ID_book: book._id, status: { $in: ['borrowed', 'reserved'] } });
-      const NoAvaiCopies = totalCopies - borrowedOrReservedCopies;
+      const noAvaiCopies = totalCopies - borrowedOrReservedCopies;
       
       result.push({ 
         bookId: book._id,
@@ -73,7 +73,7 @@ router.get('/category/:category', async (req, res) => {
         category: book.category,
         authors: authors.map(a => a.author),
         edition: book.edition,
-        NoAvaiCopies,
+        noAvaiCopies,
       });
     }
     res.json({
@@ -106,7 +106,7 @@ router.get('/search', async (req, res) => {
       // Tính toán NoCopies
       const totalCopies = await CopyBook.countDocuments({ ID_book: book._id });
       const borrowedOrReservedCopies = await CopyBook.countDocuments({ ID_book: book._id, status: { $in: ['borrowed', 'reserved'] } });
-      const NoAvaiCopies = totalCopies - borrowedOrReservedCopies;
+      const noAvaiCopies = totalCopies - borrowedOrReservedCopies;
       
       result.push({ 
         bookId: book._id,
@@ -115,7 +115,7 @@ router.get('/search', async (req, res) => {
         category: book.category,
         authors: authors.map(a => a.author),
         edition: book.edition,
-        NoAvaiCopies,
+        noAvaiCopies,
       });
     }
     res.json({
@@ -140,7 +140,7 @@ router.get('/newest', async (req, res) => {
         // Tính toán NoCopies
         const totalCopies = await CopyBook.countDocuments({ ID_book: book._id });
         const borrowedOrReservedCopies = await CopyBook.countDocuments({ ID_book: book._id, status: { $in: ['borrowed', 'reserved'] } });
-        const NoAvaiCopies = totalCopies - borrowedOrReservedCopies;
+        const noAvaiCopies = totalCopies - borrowedOrReservedCopies;
         
         result.push({ 
           bookId: book._id,
@@ -149,7 +149,7 @@ router.get('/newest', async (req, res) => {
           category: book.category,
           authors: authors.map(a => a.author),
           edition: book.edition,
-          NoAvaiCopies,
+          noAvaiCopies,
         });
       }
       res.json({
@@ -193,7 +193,7 @@ router.get('/top-rated', async (req, res) => {
           CopyBook.find({ ID_book: book._id, status: 'available' }).lean()
         ]);
 
-        const NoAvaiCopies = copies.length;
+        const noAvaiCopies = copies.length;
 
         return {
           bookId: book._id,
@@ -203,7 +203,7 @@ router.get('/top-rated', async (req, res) => {
           category: book.category,
           authors: authors.map(a => a.author),
           edition: book.edition || null,
-          NoAvaiCopies,
+          noAvaiCopies,
         };
       })
     );
@@ -352,10 +352,10 @@ router.post('/', async (req, res) => {
   try {
     const {
       name,
-      NoValidCopies,
-      NoPages,
-      Publisher,
-      Description,
+      noValidCopies,
+      noPages,
+      publisher,
+      description,
       imageUrl,
       copies,
       category,
@@ -370,10 +370,10 @@ router.post('/', async (req, res) => {
     // Tạo sách mới
     const newBook = new Book({
       name,
-      NoValidCopies: NoValidCopies || 0,
-      NoPages: NoPages || 0,
-      Publisher: Publisher || "Unknown Publisher",
-      Description: Description || "No description available",
+      noValidCopies: noValidCopies || 0,
+      nameoPages: noPages || 0,
+      publisher: publisher || "Unknown Publisher",
+      description: description || "No description available",
       imageUrl: imageUrl || null,
       category,
     });
