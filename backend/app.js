@@ -4,7 +4,7 @@ const http = require('http');
 const { Server } = require('socket.io');
 const cron = require('node-cron');
 require('dotenv').config();
-
+const cors = require('cors');
 //Models
 const BorrowTicket = require('./models/BorrowTicket')
 
