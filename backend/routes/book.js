@@ -8,11 +8,30 @@ const AuthorBook = require('../models/AuthorBook');
 router.get('/', async (req, res) => {
   try {
     const books = await Book.find({}).lean();
+    const result =[];
     for (const book of books) {
       book.copies = await CopyBook.find({ ID_book: book._id });
-      book.authors = await AuthorBook.find({ ID_book: book._id }, 'author');
+      authors = await AuthorBook.find({ ID_book: book._id }, 'author');
+      // Tính toán NoCopies
+      const totalCopies = await CopyBook.countDocuments({ ID_book: book._id });
+      const borrowedOrReservedCopies = await CopyBook.countDocuments({ ID_book: book._id, status: { $in: ['borrowed', 'reserved'] } });
+      const NoAvaiCopies = totalCopies - borrowedOrReservedCopies;
+      
+      result.push({
+        bookId: book._id,
+        name: book.name,
+        imageUrl: book.imageUrl,
+        category: book.category,
+        author: authors.map(a => a.author),
+        edition: book.edition,
+        NoAvaiCopies,
+      });
     }
-    res.json(books);
+
+    res.json({
+      message: "Success",
+      data: result,
+    });
   } catch (error) {
     res.status(500).json({ message: 'Lỗi khi lấy danh sách sách', error });
   }
@@ -21,7 +40,10 @@ router.get('/', async (req, res) => {
 router.get('/categories', async (req, res) => {
   try {
     const categories = await Book.distinct('category');
-    res.json({ categories });
+    res.json({ 
+      message: "Success",
+      data:categories,
+    });
   } catch (error) {
     res.status(500).json({ message: 'Lỗi khi lấy danh sách categories', error });
   }
@@ -35,8 +57,29 @@ router.get('/category/:category', async (req, res) => {
     if (!books.length) {
       return res.status(404).json({ message: 'Không tìm thấy sách trong category này' });
     }
-
-    res.status(200).json(books);
+    const result =[];
+    for (const book of books) {
+      book.copies = await CopyBook.find({ ID_book: book._id });
+      authors = await AuthorBook.find({ ID_book: book._id }, 'author');
+      // Tính toán NoCopies
+      const totalCopies = await CopyBook.countDocuments({ ID_book: book._id });
+      const borrowedOrReservedCopies = await CopyBook.countDocuments({ ID_book: book._id, status: { $in: ['borrowed', 'reserved'] } });
+      const NoAvaiCopies = totalCopies - borrowedOrReservedCopies;
+      
+      result.push({ 
+        bookId: book._id,
+        name: book.name,
+        imageUrl: book.imageUrl,
+        category: book.category,
+        author: authors.map(a => a.author),
+        edition: book.edition,
+        NoAvaiCopies,
+      });
+    }
+    res.json({
+      message: "Success",
+      data: result,
+    });
   } catch (error) {
     res.status(500).json({ message: 'Lỗi khi lấy sách theo category', error });
   }
@@ -56,7 +99,29 @@ router.get('/search', async (req, res) => {
       return res.status(404).json({ message: 'Không tìm thấy sách phù hợp với từ khóa' });
     }
 
-    res.status(200).json(books);
+    const result =[];
+    for (const book of books) {
+      book.copies = await CopyBook.find({ ID_book: book._id });
+      authors = await AuthorBook.find({ ID_book: book._id }, 'author');
+      // Tính toán NoCopies
+      const totalCopies = await CopyBook.countDocuments({ ID_book: book._id });
+      const borrowedOrReservedCopies = await CopyBook.countDocuments({ ID_book: book._id, status: { $in: ['borrowed', 'reserved'] } });
+      const NoAvaiCopies = totalCopies - borrowedOrReservedCopies;
+      
+      result.push({ 
+        bookId: book._id,
+        name: book.name,
+        imageUrl: book.imageUrl,
+        category: book.category,
+        author: authors.map(a => a.author),
+        edition: book.edition,
+        NoAvaiCopies,
+      });
+    }
+    res.json({
+      message: "Success",
+      data: result,
+    });
   } catch (error) {
     res.status(500).json({ message: 'Lỗi khi tìm kiếm sách', error });
   }
@@ -65,10 +130,32 @@ router.get('/search', async (req, res) => {
 // Lấy 5 sách mới nhất
 router.get('/newest', async (req, res) => {
   try {
-    const newestBooks = await Book.find({})
+    const books = await Book.find({})
       .sort({ datePublish: -1 })
       .limit(5);
-    res.json(newestBooks);
+      const result =[];
+      for (const book of books) {
+        book.copies = await CopyBook.find({ ID_book: book._id });
+        authors = await AuthorBook.find({ ID_book: book._id }, 'author');
+        // Tính toán NoCopies
+        const totalCopies = await CopyBook.countDocuments({ ID_book: book._id });
+        const borrowedOrReservedCopies = await CopyBook.countDocuments({ ID_book: book._id, status: { $in: ['borrowed', 'reserved'] } });
+        const NoAvaiCopies = totalCopies - borrowedOrReservedCopies;
+        
+        result.push({ 
+          bookId: book._id,
+          name: book.name,
+          imageUrl: book.imageUrl,
+          category: book.category,
+          author: authors.map(a => a.author),
+          edition: book.edition,
+          NoAvaiCopies,
+        });
+      }
+      res.json({
+        message: "Success",
+        data: result,
+      });
   } catch (error) {
     res.status(500).json({ message: 'Lỗi khi lấy sách mới nhất', error });
   }
@@ -80,13 +167,18 @@ router.get('/top-rated', async (req, res) => {
     const books = await Book.find({}).lean(); // Dùng lean() để tối ưu hóa hiệu suất
 
     // Tính toán điểm đánh giá trung bình
-    books.forEach(book => {
+    const booksWithAvgRate = books.map(book => {
       const totalRatings = book.Rate.one + book.Rate.two + book.Rate.three + book.Rate.four + book.Rate.five;
       const avgRate = totalRatings
         ? (book.Rate.one * 1 + book.Rate.two * 2 + book.Rate.three * 3 + book.Rate.four * 4 + book.Rate.five * 5) / totalRatings
         : 0;
-      book.AvgRate = avgRate.toFixed(1);
+
+      return {
+        ...book,
+        AvgRate: avgRate.toFixed(1),
+      };
     });
+
 
     // Sắp xếp và chọn 5 sách có đánh giá cao nhất
     const topRatedBooks = books
@@ -95,11 +187,14 @@ router.get('/top-rated', async (req, res) => {
       .map(book => ({
         _id: book._id,
         name: book.name,
-        AvgRate: book.AvgRate,
-        imageUrl: book.imageUrl, // Bao gồm URL ảnh
+        avgRating: book.avgRate ? book.avgRate : null,
+        imageUrl: book.imageUrl, 
       }));
 
-    res.json(topRatedBooks);
+    res.json({
+      message: "Success",
+      data:topRatedBooks,
+    });
   } catch (error) {
     res.status(500).json({ message: 'Lỗi khi lấy sách có đánh giá cao nhất', error });
   }
@@ -142,7 +237,7 @@ router.put('/:id', async (req, res) => {
       }
     }
 
-    res.status(200).json({ message: 'Cập nhật sách thành công', book });
+    res.status(200).json({ message: 'Cập nhật sách thành công', data: book });
   } catch (error) {
     res.status(500).json({ message: 'Lỗi khi cập nhật sách', error });
   }
@@ -151,42 +246,67 @@ router.put('/:id', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     // Tìm sách theo ID
-    const book = await Book.findById(req.params.id).lean();
+    const { id: bookId } = req.params; // ID của sách
+    const { userID } = req.query;
+    const book = await Book.findById(bookId).lean();
     if (!book) {
       return res.status(404).json({ message: 'Không tìm thấy sách' });
     }
+    if (userID) {
+      const studentExists = await Student.findOne({ ID: userID }).lean();
+      if (!studentExists) {
+        return res.status(404).json({ message: 'Không tìm thấy userID' });
+      }
+    }
+     // Tìm các bản sao của sách
+     const copies = await CopyBook.find({ ID_book: book._id }).lean();
 
-    // Tìm các bản sao của sách
-    const copies = await CopyBook.find({ ID_book: book._id }).lean();
-
-    // Tính tổng số bản sao và số bản có thể mượn
-    const totalCopies = copies.length;
-    const availableCopies = copies.filter(copy => copy.status === "available").length;
-    // Kiểm tra xem có thể mượn được không
-    const canBorrow = copies.some(copy => copy.status === "available");
-
+     // Tính tổng số bản sao và số bản có thể mượn
+     const totalCopies = copies.length;
+     const availableCopies = copies.filter(copy => copy.status === "available").length;
     // Tìm các tác giả của sách
     const authors = await AuthorBook.find({ ID_book: book._id }, 'author').lean();
+    // Kiểm tra logic canHold
+    let canHold = true;
+    if (userID) {
+      const activeBorrowTicket = await BorrowTicket.findOne({
+        ID_student: userID,
+        ID_copy: { $in: copies.map(copy => copy._id) },
+        status: "borrowing",
+      });
 
+      const canceledHoldTicket = await HoldTicket.findOne({
+        ID_student: userID,
+        ID_book: book._id,
+        status: "cancle",
+      });
+
+      if (activeBorrowTicket || canceledHoldTicket) {
+        canHold = !!(activeBorrowTicket && canceledHoldTicket);
+      }
+    }
     // Chuẩn bị đối tượng phản hồi
     const response = {
       bookId: book._id,
       name: book.name,
-      authors: authors.length > 0 ? authors.map(a => a.author) : ["No author"], // Danh sách tác giả
+      authors: authors.length > 0 ? authors.map(a => a.author) : null, // Danh sách tác giả
       category: book.category,
-      publisher: book.Publisher || "Unknown publisher",
+      publisher: book.Publisher || null,
       noCopies: totalCopies,
       noAvaiCopies: availableCopies,
       noPages: book.NoPages,
-      avgRating: book.avgRate ? book.avgRate : "0",
-      description: book.Description || "No description available",
-      edition: book.edition ? book.edition : "none edition",
-      publishDate: book.datePublish ? book.datePublish : "none Date",
-      canBorrow: canBorrow ? 1 : 0
+      avgRating: book.avgRate ? book.avgRate : null,
+      description: book.Description || null,
+      edition: book.edition ? book.edition : null,
+      publishDate: book.datePublish ? book.datePublish : null,
+      canHold: canHold ? 1 : 0,
     };
 
     // Trả về JSON
-    return res.json(response);
+    return res.json({
+      message: "Success",
+      data:response,
+    });
   } catch (error) {
     // Xử lý lỗi
     return res.status(500).json({ message: 'Lỗi khi lấy thông tin sách', error });
