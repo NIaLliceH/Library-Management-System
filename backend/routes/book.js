@@ -108,19 +108,15 @@ router.get('/top-rated', async (req, res) => {
 router.put('/:id', async (req, res) => {
   try {
     const bookId = req.params.id;
-    const { name, NoPages, Publisher, Description, imageUrl, copies, category } = req.body;
+    const updates = req.body; 
 
     const book = await Book.findById(bookId);
     if (!book) {
       return res.status(404).json({ message: 'Không tìm thấy sách để cập nhật' });
     }
-
-    if (name) book.name = name;
-    if (NoPages) book.NoPages = NoPages;
-    if (Publisher) book.Publisher = Publisher;
-    if (Description) book.Description = Description;
-    if (imageUrl) book.imageUrl = imageUrl;
-    if (category) book.category = category; 
+    Object.keys(updates).forEach(key => {
+      book[key] = updates[key]; 
+    });
 
     await book.save();
 
@@ -267,6 +263,22 @@ router.delete('/:id', async (req, res) => {
     res.status(500).json({ message: 'Lỗi khi xóa sách', error });
   }
 });
+// Xóa một bản sao cụ thể
+router.delete('/copies/:id', async (req, res) => {
+  try {
+    const copyId = req.params.id;
 
+    const copy = await CopyBook.findById(copyId);
+    if (!copy) {
+      return res.status(404).json({ message: 'Không tìm thấy bản sao để xóa' });
+    }
+
+    await CopyBook.findByIdAndDelete(copyId);
+
+    res.status(200).json({ message: 'Xóa bản sao thành công' });
+  } catch (error) {
+    res.status(500).json({ message: 'Lỗi khi xóa bản sao', error });
+  }
+});
 
 module.exports = router;
