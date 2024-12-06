@@ -20,7 +20,7 @@ router.get('/', async (req, res) => {
 // Lấy tất cả category
 router.get('/categories', async (req, res) => {
   try {
-    const categories = await CategoryBook.find({}).distinct('category');
+    const categories = await Book.distinct('category');
     res.json({ categories });
   } catch (error) {
     res.status(500).json({ message: 'Lỗi khi lấy danh sách categories', error });
@@ -30,12 +30,12 @@ router.get('/categories', async (req, res) => {
 router.get('/category/:category', async (req, res) => {
   try {
     const { category } = req.params;
-    const categoryBooks = await Book.find({ category }).populate('ID_book');
-    if (!categoryBooks.length) {
+    const books = await Book.find({ category }).lean();
+    
+    if (!books.length) {
       return res.status(404).json({ message: 'Không tìm thấy sách trong category này' });
     }
 
-    const books = categoryBooks.map(cb => cb.ID_book);
     res.status(200).json(books);
   } catch (error) {
     res.status(500).json({ message: 'Lỗi khi lấy sách theo category', error });
@@ -104,34 +104,49 @@ router.get('/top-rated', async (req, res) => {
     res.status(500).json({ message: 'Lỗi khi lấy sách có đánh giá cao nhất', error });
   }
 });
-// Thêm category
-router.post('/:id/category', async (req, res) => {
+// Cập nhật sách
+router.put('/:id', async (req, res) => {
   try {
-    const { id } = req.params;
-    const { category } = req.body;
+    const bookId = req.params.id;
+    const updates = req.body; 
 
-    if (!category || category.trim() === '') {
-      return res.status(400).json({ message: 'Vui lòng cung cấp tên category hợp lệ' });
+    const book = await Book.findById(bookId);
+    if (!book) {
+      return res.status(404).json({ message: 'Không tìm thấy sách để cập nhật' });
     }
-
-    const bookExists = await Book.findById(id);
-    if (!bookExists) {
-      return res.status(404).json({ message: 'Không tìm thấy sách với ID đã cung cấp' });
-    }
-
-    const newCategory = new CategoryBook({
-      ID_book: id,
-      category: category.trim(),
+    Object.keys(updates).forEach(key => {
+      book[key] = updates[key]; 
     });
 
-    await newCategory.save();
+    await book.save();
 
-    res.status(201).json({ message: 'Thêm category thành công', category: newCategory });
+    if (copies && copies.length > 0) {
+      for (const copy of copies) {
+        if (copy._id) {
+          await CopyBook.findByIdAndUpdate(copy._id, {
+            shell: copy.shell,
+            status: copy.status,
+            publish_date: copy.publish_date,
+            edition: copy.edition,
+          });
+        } else {
+          const newCopy = new CopyBook({
+            ID_book: bookId,
+            shell: copy.shell,
+            status: copy.status || "available",
+            publish_date: copy.publish_date || new Date().toISOString(),
+            edition: copy.edition || "1st edition",
+          });
+          await newCopy.save();
+        }
+      }
+    }
+
+    res.status(200).json({ message: 'Cập nhật sách thành công', book });
   } catch (error) {
-    res.status(500).json({ message: 'Lỗi khi thêm category', error });
+    res.status(500).json({ message: 'Lỗi khi cập nhật sách', error });
   }
 });
-
 // Get a book by ID
 router.get('/:id', async (req, res) => {
   try {
@@ -168,10 +183,9 @@ router.post('/', async (req, res) => {
       Description,
       imageUrl,
       copies,
-      category,
+      category 
     } = req.body;
 
-    // Tạo một sách mới
     const newBook = new Book({
       name,
       NoCopies,
@@ -181,12 +195,11 @@ router.post('/', async (req, res) => {
       Publisher,
       Description,
       imageUrl,
+      category, 
     });
 
-    // Lưu sách vào cơ sở dữ liệu
     const savedBook = await newBook.save();
 
-    // Thêm thông tin CopyBook nếu có
     if (copies && copies.length > 0) {
       const copyBooks = copies.map(copy => ({
         ID_book: savedBook._id,
@@ -197,7 +210,6 @@ router.post('/', async (req, res) => {
       }));
       await CopyBook.insertMany(copyBooks);
     }
-
 
     res.status(201).json({ message: 'Thêm sách thành công', book: savedBook });
   } catch (error) {
@@ -251,52 +263,21 @@ router.delete('/:id', async (req, res) => {
     res.status(500).json({ message: 'Lỗi khi xóa sách', error });
   }
 });
-
-// Cập nhật thông tin sách theo ID
-router.put('/:id', async (req, res) => {
+// Xóa một bản sao cụ thể
+router.delete('/copies/:id', async (req, res) => {
   try {
-    const bookId = req.params.id;
-    const { name, NoPages, Publisher, Description, imageUrl, copies, category } = req.body;
+    const copyId = req.params.id;
 
-    const book = await Book.findById(bookId);
-    if (!book) {
-      return res.status(404).json({ message: 'Không tìm thấy sách để cập nhật' });
+    const copy = await CopyBook.findById(copyId);
+    if (!copy) {
+      return res.status(404).json({ message: 'Không tìm thấy bản sao để xóa' });
     }
 
-    if (name) book.name = name;
-    if (NoPages) book.NoPages = NoPages;
-    if (Publisher) book.Publisher = Publisher;
-    if (Description) book.Description = Description;
-    if (imageUrl) book.imageUrl = imageUrl;
-    if (category) book.category = category; // Cập nhật category
+    await CopyBook.findByIdAndDelete(copyId);
 
-    await book.save();
-
-    if (copies && copies.length > 0) {
-      for (const copy of copies) {
-        if (copy._id) {
-          await CopyBook.findByIdAndUpdate(copy._id, {
-            shell: copy.shell,
-            status: copy.status,
-            publish_date: copy.publish_date,
-            edition: copy.edition,
-          });
-        } else {
-          const newCopy = new CopyBook({
-            ID_book: bookId,
-            shell: copy.shell,
-            status: copy.status || "available",
-            publish_date: copy.publish_date || new Date().toISOString(),
-            edition: copy.edition || "1st edition",
-          });
-          await newCopy.save();
-        }
-      }
-    }
-
-    res.status(200).json({ message: 'Cập nhật sách thành công', book });
+    res.status(200).json({ message: 'Xóa bản sao thành công' });
   } catch (error) {
-    res.status(500).json({ message: 'Lỗi khi cập nhật sách', error });
+    res.status(500).json({ message: 'Lỗi khi xóa bản sao', error });
   }
 });
 
