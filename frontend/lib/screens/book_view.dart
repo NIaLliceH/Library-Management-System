@@ -32,7 +32,7 @@ class BookView extends StatelessWidget {
           ),
         ),
         body: FutureBuilder(
-          future: book != null ? ApiService.getBookDetails(book!) : ApiService.getBookById(bookId),
+          future: book != null ? ApiService.getBookDetails(book!, thisUser.id) : ApiService.getBookById(bookId, thisUser.id),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return Center(
@@ -119,7 +119,7 @@ class BookView extends StatelessWidget {
                                 ElevatedButton(
                                   onPressed: () async {
                                     try {
-                                      final message = await ApiService.createHoldTicket(thisUser!.id, bookId);
+                                      final message = await ApiService.createHoldTicket(thisUser.id, bookId);
                                       if (context.mounted) {
                                         ScaffoldMessenger.of(context).showSnackBar(
                                           SnackBar(

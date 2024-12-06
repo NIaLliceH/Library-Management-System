@@ -29,7 +29,7 @@ class _HomePageState extends State<HomePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Hi, ${thisUser!.name}',
+                'Hi, ${thisUser.name}',
                 style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
@@ -181,7 +181,8 @@ class _HomePageState extends State<HomePage> {
                   child: Text('No data available'),
                 );
               } else {
-                final categories = snapshot.data!;
+                var categories = snapshot.data!;
+                categories.add('All'); // display all books
                 return ListView.builder(
                   padding: EdgeInsets.only(top: 10),
                   physics: BouncingScrollPhysics(),

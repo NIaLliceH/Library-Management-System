@@ -9,7 +9,7 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
 class BorrowTicketView extends StatelessWidget {
   final BorrowTicket ticket;
-  final String userId = thisUser!.id!;
+  final String userId = thisUser.id;
   BorrowTicketView({super.key, required this.ticket});
 
   @override

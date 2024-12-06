@@ -5,7 +5,7 @@ import '../constants.dart';
 import '../models/user.dart';
 
 class ProfilePage extends StatelessWidget {
-  final User user = thisUser!;
+  final User user = thisUser;
   ProfilePage({super.key});
 
   @override
@@ -71,7 +71,7 @@ class ProfilePage extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: () async {
                     // Add logout functionality later?
-                    thisUser = null;
+                    // thisUser = null;
                     await AuthService.clearLoginState();
                     if (context.mounted) {
                       Navigator.pushReplacementNamed(context, '/login'); // cant go back

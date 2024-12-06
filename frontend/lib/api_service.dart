@@ -26,8 +26,8 @@ class ApiService {
     }
   }
 
-  static Future<Book> getBookDetails(Book book) async {
-    final response = await http.get(Uri.parse('$baseUrl/books/${book.id}'));
+  static Future<Book> getBookDetails(Book book, String userId) async {
+    final response = await http.get(Uri.parse('$baseUrl/books/${book.id}/$userId'));
     if (response.statusCode == 200) {
       book.updateDetails(jsonDecode(response.body));
       return book;
@@ -36,8 +36,8 @@ class ApiService {
     }
   }
 
-  static Future<Book> getBookById(String id) async {
-    final response = await http.get(Uri.parse('$baseUrl/books/$id'));
+  static Future<Book> getBookById(String id, String userId) async {
+    final response = await http.get(Uri.parse('$baseUrl/books/$id/$userId'));
     if (response.statusCode == 200) {
       dynamic json = jsonDecode(response.body);
       Book book = Book.fromBasicJson(json);
@@ -49,6 +49,10 @@ class ApiService {
   }
 
   static Future<List<Book>> getBooksByCategory(String category) async {
+    if (category == 'All') {
+      return getAllBooks();
+    }
+
     final response = await http.get(Uri.parse('$baseUrl/books/category/$category'));
     if (response.statusCode == 200) {
       List<dynamic> body = jsonDecode(response.body);
@@ -188,6 +192,9 @@ class ApiService {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body)['data'];
+      if (data['role'] != 'student') {
+        throw 'Invalid role';
+      }
       return Student.fromJson(data);
     } else if (response.statusCode == 400) { // !!! should be 401
       throw 'Invalid username or password';

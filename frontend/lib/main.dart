@@ -41,9 +41,7 @@ class MyApp extends StatelessWidget {
 }
 
 class MainPage extends StatefulWidget {
-  final User user = thisUser!;
-
-  MainPage({super.key});
+  const MainPage({super.key});
 
   @override
   State<StatefulWidget> createState() => _MainPageState();

@@ -51,14 +51,14 @@ class _LoginPageState extends State<LoginPage> {
                       'BKLIB',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 65,
+                        fontSize: 60,
                         color: Colors.white,
                       ),
                     ),
                     // app logo
                     Container(
                       height: 90,
-                      width: 120,
+                      width: 100,
                       decoration: BoxDecoration(
                         image: DecorationImage(
                             image: AssetImage('assets/images/logo.png'),

@@ -1,4 +1,3 @@
-import 'package:frontend/globals.dart';
 import 'package:frontend/models/user.dart';
 
 class Student extends User {

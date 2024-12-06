@@ -7,7 +7,7 @@ import '../utils.dart';
 import 'hold_ticket_view.dart';
 
 class TicketsPage extends StatefulWidget {
-  final String userId = thisUser!.id;
+  final String userId = thisUser.id;
   TicketsPage({super.key});
 
   @override

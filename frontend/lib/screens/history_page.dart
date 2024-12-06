@@ -6,8 +6,8 @@ import '../globals.dart';
 import '../utils.dart';
 
 class HistoryPage extends StatelessWidget {
-  final String userId = thisUser!.id;
-  HistoryPage({super.key});
+  // final String userId = thisUser.id;
+  const HistoryPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +25,7 @@ class HistoryPage extends StatelessWidget {
         ),
       ),
       body: FutureBuilder(
-        future: ApiService.getBorrowTicketsOfUser(userId),
+        future: ApiService.getBorrowTicketsOfUser(thisUser.id),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(
