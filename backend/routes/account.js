@@ -159,4 +159,62 @@ router.post('/login', async (req, res) => {
   }
 });
 
+
+router.get('/allstudent', async (req, res) => {
+  try {
+    // Lấy tất cả user từ User collection
+    const users = await User.find({}).exec();
+
+    // Lấy danh sách tài khoản từ Account collection
+    const accounts = await Account.find({ Use_Role: 'student' }).exec();
+
+    // Lấy tất cả student
+    const students = await Student.find({}).exec();
+
+    // Tạo một map để tra cứu trạng thái từ danh sách tài khoản
+    const accountMap = accounts.reduce((map, account) => {
+      map[account._id.toString()] = account.Status;
+      return map;
+    }, {});
+
+    // Tạo một map để tra cứu MSSV từ danh sách student
+    const studentMap = students.reduce((map, student) => {
+      map[student.ID.toString()] = student;
+      return map;
+    }, {});
+
+    // Lọc danh sách user theo role và ghép thêm trạng thái tài khoản cùng thông tin sinh viên
+    const result = users
+      .filter(user => accountMap[user.ID_user?.toString()])
+      .map(user => {
+        const studentInfo = studentMap[user.ID_user.toString()];
+        return {
+          userId: user.ID_user,
+          name: user.name,
+          gender: user.gender,
+          address: user.address,
+          avatarUrl: user.avatar,
+          joinDate: user.join_date,
+          email: user.email,
+          accountStatus: accountMap[user.ID_user.toString()],
+          MSSV: studentInfo ? studentInfo.MSSV : 'N/A',
+          dob: studentInfo ? studentInfo.dob : 'N/A',
+          faculty: studentInfo ? studentInfo.faculty : 'N/A',
+          NoWarning: studentInfo ? studentInfo.NoWarning : 'N/A',
+        };
+      });
+
+    res.status(200).json({
+      message: 'Danh sách học sinh',
+      data: result,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: 'Lỗi khi lấy danh sách học sinh',
+      error: error.message,
+    });
+  }
+});
+
+
 module.exports = router;
