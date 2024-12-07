@@ -216,6 +216,34 @@ router.get('/top-rated', async (req, res) => {
     res.status(500).json({ message: 'Lỗi khi lấy sách có đánh giá cao nhất', error });
   }
 });
+// cập nhật copies
+router.put('/:bookId/copies/:copyId', async (req, res) => {
+  try {
+    const { bookId, copyId } = req.params; // Lấy bookId và copyId từ URL
+    const { shell, status } = req.body; // Dữ liệu cần cập nhật
+
+    // Kiểm tra xem bản sao có tồn tại không
+    const copy = await CopyBook.findOne({ _id: copyId, ID_book: bookId });
+    if (!copy) {
+      return res.status(404).json({ message: 'Không tìm thấy bản sao để cập nhật' });
+    }
+
+    // Cập nhật các trường nếu có trong body
+    if (shell !== undefined) copy.shell = shell;
+    if (status !== undefined) copy.status = status;
+
+    // Lưu bản sao sau khi cập nhật
+    const updatedCopy = await copy.save();
+
+    res.status(200).json({
+      message: 'Cập nhật bản sao thành công',
+      data: updatedCopy,
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Lỗi khi cập nhật bản sao', error });
+  }
+});
+
 // Cập nhật sách
 router.put('/:id', async (req, res) => {
   try {
