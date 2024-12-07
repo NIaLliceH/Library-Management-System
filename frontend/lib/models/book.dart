@@ -44,11 +44,10 @@ class Book {
     return Book(
       id: json['bookId'],
       title: json['name'] ?? 'N/A',
-      // author: List<String>.from(json['author']).isEmpty ? ['N/A'] : List<String>.from(json['author']),
-      author: List<String>.from(json['authors'] ?? ['N/A']),
+      author: List<String>.from(json['authors']).isEmpty ? ['N/A'] : List<String>.from(json['authors']),
       category: json['category'] ?? 'N/A',
       imageUrl: url,
-      availableCopies: json['NoAvaiCopies'] ?? 0,
+      availableCopies: json['noAvaiCopies'] ?? 0,
     );
   }
 

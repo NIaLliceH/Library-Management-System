@@ -7,10 +7,10 @@ import 'package:frontend/models/book.dart';
 import '../auth_service.dart';
 
 class BookView extends StatelessWidget {
-  final Book? book;
+  // final Book? book;
   final String bookId;
   final String userId = thisUser!.id;
-  BookView({super.key, required this.bookId, this.book});
+  BookView({super.key, required this.bookId});
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +34,7 @@ class BookView extends StatelessWidget {
           ),
         ),
         body: FutureBuilder(
-          future: book == null ? ApiService.getBookById(bookId, userId) : ApiService.getBookDetails(book!, userId),
+          future: ApiService.getBookById(bookId, userId),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return Center(
@@ -66,7 +66,7 @@ class BookView extends StatelessWidget {
                           child: Image.network(
                             book.imageUrl,
                             fit: BoxFit.cover,
-                            height: 300,
+                            height: 250,
                           ),
                         ),
                         // book info
@@ -97,6 +97,7 @@ class BookView extends StatelessWidget {
                             final DateTime deadline = now.add(Duration(days: maxHoldTicketDays));
 
                             return AlertDialog(
+                              backgroundColor: popUp,
                               title: Text('Hold Ticket', style: TextStyle(color: kBase3), textAlign: TextAlign.center),
                               content: Column(
                                 mainAxisSize: MainAxisSize.min,
@@ -117,7 +118,7 @@ class BookView extends StatelessWidget {
                                   onPressed: () {
                                     Navigator.pop(context);
                                   },
-                                  child: Text('Cancel'),
+                                  child: Text('Cancel', style: TextStyle(color: Colors.black)),
                                 ),
                                 ElevatedButton(
                                   // set the button color to confirmButton

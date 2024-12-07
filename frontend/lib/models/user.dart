@@ -8,7 +8,7 @@ abstract class User {
   final String gender;
   final String address;
   // final String phoneNum;
-  final String joinDate;
+  final DateTime? joinDate;
   final String role;
 
   User({

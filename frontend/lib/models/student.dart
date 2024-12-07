@@ -38,7 +38,7 @@ class Student extends User {
       mssv: json['MSSV'] ?? 'N/A',
       faculty: json['faculty'] ?? 'N/A',
       dob: json['doB'] ?? 'N/A',
-      joinDate: json['joinDate'] ?? 'N/A',
+      joinDate: DateTime.parse(json['joinDate']),
       status: json['status'] == 'on' ? true : false,
       numOfWarning: int.parse(json['noWarning'].toString()),
     );

@@ -4,6 +4,7 @@ import 'package:frontend/screens/search_result.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:frontend/api_service.dart';
 import 'package:frontend/auth_service.dart';
+import '../models/book.dart';
 import 'book_view.dart';
 import 'category_result.dart';
 
@@ -16,6 +17,18 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   String _userInput = '';
+
+  late Future<List<Book>> newBooksFuture;
+  late Future<List<Book>> topRatedBooksFuture;
+  late Future<List<Book>> mostBorrowedBooksFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    newBooksFuture = ApiService.getBooksFiltered(BookFilter.newRelease);
+    topRatedBooksFuture = ApiService.getBooksFiltered(BookFilter.topRated);
+    mostBorrowedBooksFuture = ApiService.getBooksFiltered(BookFilter.mostBorrowed);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +51,7 @@ class _HomePageState extends State<HomePage> {
               Text(
                 'Explore the world of books',
                 style: TextStyle(
-                    fontSize: 20,
+                    fontSize: 18,
                     fontWeight: FontWeight.w700,
                     color: Colors.black),
               ),
@@ -146,9 +159,9 @@ class _HomePageState extends State<HomePage> {
                   Expanded(
                     child: TabBarView(
                       children: [
-                        BookListView(filter: BookFilter.newRelease),
-                        BookListView(filter: BookFilter.topRated),
-                        BookListView(filter: BookFilter.mostBorrowed),
+                        BookListView(future: newBooksFuture),
+                        BookListView(future: topRatedBooksFuture),
+                        BookListView(future: mostBorrowedBooksFuture),
                       ],
                     )
                   )
@@ -184,7 +197,7 @@ class _HomePageState extends State<HomePage> {
                 var categories = snapshot.data!;
                 categories.add('All'); // display all books
                 return ListView.builder(
-                  padding: EdgeInsets.only(top: 10),
+                  padding: EdgeInsets.symmetric(vertical: 10),
                   physics: BouncingScrollPhysics(),
                   // scrollDirection: Axis.vertical,
                   shrinkWrap: true, // because no wrapping Container to set height
@@ -218,7 +231,7 @@ class _HomePageState extends State<HomePage> {
                               categories[index],
                               style: TextStyle(
                                 fontSize: 16,
-                                color: kBase3,
+                                color: kBase1,
                               ),
                             ),
                             Icon(
@@ -242,8 +255,8 @@ class _HomePageState extends State<HomePage> {
 
 // Book list view (new, top rated, most borrowed)
 class BookListView extends StatelessWidget {
-  final BookFilter filter;
-  const BookListView({super.key, required this.filter});
+  final Future<List<Book>> future;
+  const BookListView({super.key, required this.future});
 
   @override
   Widget build(BuildContext context) {
@@ -251,7 +264,7 @@ class BookListView extends StatelessWidget {
       margin: EdgeInsets.only(top: 20, bottom: 20),
       height: 230,
       child: FutureBuilder(
-        future: ApiService.getBooksFiltered(filter),
+        future: future,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(
@@ -282,20 +295,22 @@ class BookListView extends StatelessWidget {
                     );
                   },
                   child: Container(
-                      width: 160,
-                      margin: EdgeInsets.only(right: 15),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        image: DecorationImage(
-                            fit: BoxFit.cover,
-                            image: NetworkImage(books[index].imageUrl)),
-                      )),
+                    width: 160,
+                    margin: EdgeInsets.only(right: 10),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      image: DecorationImage(
+                        fit: BoxFit.cover,
+                        image: NetworkImage(books[index].imageUrl),
+                      ),
+                    ),
+                  ),
                 );
               },
             );
           }
         },
-      )
+      ),
     );
   }
 }

@@ -7,7 +7,7 @@ class HoldTicket {
   final DateTime createdDate;
   final DateTime dueDate;
 
-  String? bookId;
+  // String? bookId;
   String? bookImageUrl;
   String? bookEdition;
   DateTime? canceledDate;
@@ -21,7 +21,7 @@ class HoldTicket {
     required this.createdDate,
     required this.dueDate,
 
-    this.bookId,
+    // this.bookId,
     this.bookImageUrl,
     this.bookEdition,
     this.canceledDate,
@@ -29,20 +29,20 @@ class HoldTicket {
 
   factory HoldTicket.fromBasicJson(Map<String, dynamic> json) {
     return HoldTicket(
-      id: json['_id'],
-      bookTitle: json['bookTitle'],
-      bookAuthor: List<String>.from(json['bookAuthor']),
-      bookCategory: json['bookCategory'] ?? 'N/A',
-      canceled: json['status'],
+      id: json['holdTicket_ID'] ?? 'N/A',
+      bookTitle: json['title'] ?? 'N/A',
+      bookAuthor: List<String>.from(json['author']).isEmpty ? ['N/A'] : List<String>.from(json['author']),
+      bookCategory: json['category'] ?? 'N/A',
+      canceled: json['status'] == 'valid' ? false : true,
       createdDate: DateTime.parse(json['createdDate']),
-      dueDate: DateTime.parse(json['dueDate']),
+      dueDate: DateTime.parse(json['expiredDate']),
     );
   }
 
   void updateDetails(Map<String, dynamic> json) {
-    bookId = json['bookId'];
-    bookImageUrl = json['bookImageUrl'] ?? 'https://drive.google.com/uc?export=view&id=1oxjzdaMKjybjbwoduSXd9mGGJDPTcJD6'; // placeholder image
-    bookEdition = json['bookEdition'];
+    // bookId = json['bookId'];
+    bookImageUrl = json['imageUrl'] ?? 'https://drive.google.com/uc?export=view&id=1oxjzdaMKjybjbwoduSXd9mGGJDPTcJD6'; // placeholder image
+    bookEdition = json['edition'];
     if (canceled) {
       canceledDate = DateTime.parse(json['canceledDate']);
     }

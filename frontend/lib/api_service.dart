@@ -26,6 +26,7 @@ class ApiService {
     }
   }
 
+  // unused
   static Future<Book> getBookDetails(Book book, String userId) async {
     final response = await http.get(Uri.parse('$baseUrl/books/${book.id}/$userId'));
     if (response.statusCode == 200) {
@@ -113,7 +114,7 @@ class ApiService {
   }
 
   static Future<List<HoldTicket>> getHoldTicketsOfUser(String userId) async {
-    final response = await http.get(Uri.parse('$baseUrl/ticket/$userId/hold'));
+    final response = await http.get(Uri.parse('$baseUrl/$userId/hold'));
     if (response.statusCode == 200) {
       List<dynamic> body = jsonDecode(response.body);
       List<HoldTicket> tickets = body.map((dynamic item) => HoldTicket.fromBasicJson(item)).toList();
