@@ -12,7 +12,6 @@ const HoldTicket = require('../models/HoldTicket');
 
 router.get('/hold', async (req, res) => {
     try {
-        const { id_user } = req.params;
 
         // Lấy danh sách các holdTicket của sinh viên
         const holdTickets = await holdTicket.find().exec();
