@@ -248,8 +248,6 @@ router.put('/:id', async (req, res) => {
               update: {
                 shell: copy.shell,
                 status: copy.status,
-                publish_date: copy.publish_date,
-                edition: copy.edition,
               },
             },
           };
@@ -261,8 +259,6 @@ router.put('/:id', async (req, res) => {
                 bookID: bookId,
                 shell: copy.shell || "Default Shell",
                 status: copy.status || "available",
-                publish_date: copy.publish_date || new Date().toISOString(),
-                edition: copy.edition || "1st edition",
               },
             },
           };
@@ -408,8 +404,6 @@ router.post('/', async (req, res) => {
         ID_book: savedBook._id,
         shell: copy.shell || "Default Shell",
         status: copy.status || "available",
-        publish_date: copy.publish_date || new Date().toISOString(),
-        edition: copy.edition || "1st edition",
       }));
       savedCopies = await CopyBook.insertMany(copyBooks);
     }
@@ -483,34 +477,7 @@ router.delete('/:id', async (req, res) => {
     res.status(500).json({ message: 'Lỗi khi xóa sách', error });
   }
 });
-router.put('/:bookId/copies/:copyId', async (req, res) => {
-  try {
-    const { bookId, copyId } = req.params; // Lấy bookId và copyId từ URL
-    const { shell, status, publish_date, edition } = req.body; // Dữ liệu cần cập nhật
-
-    // Kiểm tra xem bản sao có tồn tại không
-    const copy = await CopyBook.findOne({ _id: copyId, ID_book: bookId });
-    if (!copy) {
-      return res.status(404).json({ message: 'Không tìm thấy bản sao để cập nhật' });
-    }
-
-    // Cập nhật các trường nếu có trong body
-    if (shell !== undefined) copy.shell = shell;
-    if (status !== undefined) copy.status = status;
-    if (publish_date !== undefined) copy.publish_date = publish_date;
-    if (edition !== undefined) copy.edition = edition;
-
-    // Lưu bản sao sau khi cập nhật
-    const updatedCopy = await copy.save();
-
-    res.status(200).json({
-      message: 'Cập nhật bản sao thành công',
-      data: updatedCopy,
-    });
-  } catch (error) {
-    res.status(500).json({ message: 'Lỗi khi cập nhật bản sao', error });
-  }
-});
+90
 
 router.delete('/:id/copies', async (req, res) => {
   try {
