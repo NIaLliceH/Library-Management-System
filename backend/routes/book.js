@@ -272,7 +272,7 @@ router.put('/:id', async (req, res) => {
           // Cập nhật bản sao đã tồn tại
           return {
             updateOne: {
-              filter: { copyID: copy._id, bookID: bookId },
+              filter: { copyID: copy._id, ID_book: bookId },
               update: {
                 shell: copy.shell,
                 status: copy.status,
