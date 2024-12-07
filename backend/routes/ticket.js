@@ -158,12 +158,11 @@ router.get('/hold_infor/:id_ticket', async (req, res) => {
 
 router.get('/borrow', async (req, res) => {
     try {
-        const {id_user} = req.params;
-
         // Lấy danh sách tất cả borrow tickets
         const borrowTickets = await borrowTicket.find().exec();
         
         const now = new Date();
+
         // Xử lý danh sách borrowTicket
         const response = await Promise.all(
             borrowTickets.map(async (ticket) => {
@@ -172,44 +171,44 @@ router.get('/borrow', async (req, res) => {
                     ? 0
                     : Math.ceil((ticket.return_day - now) / (1000 * 60 * 60 * 24)); // Ngày còn lại
 
-                
-                //Lấy ID_book từ ID_copy
-                const copyData = await CopyBook.findOne({ _id: ticket.ID_copy })
-                const id_book = copyData ? copyData.ID_book : '0';
+                // Lấy ID_book từ ID_copy
+                const copyData = await CopyBook.findOne({ _id: ticket.ID_copy });
+                const id_book = copyData ? copyData.ID_book : null;
 
-                // Lấy thông tin Author từ AuthorBook
-                const authorData = await AuthorBook.find({ ID_book: id_book }).exec();
-                const authors = authorData.map(author => author.author); 
+                let authors = [];
+                if (id_book) {
+                    // Chỉ truy vấn AuthorBook nếu ID_book tồn tại
+                    const authorData = await AuthorBook.find({ ID_book: id_book }).exec();
+                    authors = authorData.map(author => author.author);
+                }
 
-
-                // Lấy thông tin Category từ CategoryBook
-                const nameData = await Book.findOne({ _id: id_book });
+                // Lấy thông tin sách
+                const nameData = id_book ? await Book.findOne({ _id: id_book }) : null;
                 const nameBook = nameData ? nameData.name : 'Unknown';
 
                 const returnedDate = ticket.returnedDate ? ticket.returnedDate : "Not Yet";
 
-
-
-                data = {
-                    "borrowTicket_ID": ticket._id,
-                    "title": nameBook, 
-                    "author": authors, 
-                    "createdDate": ticket.borrow_day, 
-                    "expiredDate": ticket.return_day,
-                    "returnedDate": returnedDate,
-                    "status": ticket.status, 
-                    "dayLeft": daysLeft
-                }
+                const data = {
+                    borrowTicket_ID: ticket._id,
+                    title: nameBook,
+                    author: authors,
+                    createdDate: ticket.borrow_day,
+                    expiredDate: ticket.return_day,
+                    returnedDate: returnedDate,
+                    status: ticket.status,
+                    dayLeft: daysLeft
+                };
                 return data;
             })
         );
 
         res.status(200).json(response);
-    } catch(err) {
-        console.log(err);
-        res.status(500).json({message: 'Something went wrong', error: err.message});
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Something went wrong', error: err.message });
     }
 });
+
 
 
 router.get('/:id_user/borrow', async (req, res) => {
@@ -452,5 +451,71 @@ router.post('/cancel/:ticketID', async (req, res) => {
         res.status(500).json({ message: 'Có lỗi xảy ra', error: err.message });
     }
 });
+
+
+router.get('/most-borrowed', async (req, res) => {
+    try {
+      // Lấy giới hạn từ body của request (mặc định là 10 nếu không có)
+      const limit = req.body.limit || 10;
+  
+      // Lấy tất cả dữ liệu từ collection borrowTickets
+      const borrowTickets = await borrowTicket.find({});
+  
+      // Lấy danh sách ID_copy từ borrowTickets
+      const copyIds = borrowTickets.map(ticket => ticket.ID_copy);
+  
+      // Lấy thông tin copyBooks dựa trên ID_copy
+      const copyBooks = await CopyBook.find({ _id: { $in: copyIds } });
+  
+      // Lấy danh sách ID_book từ copyBooks
+      const bookIds = copyBooks.map(copy => copy.ID_book);
+  
+      // Lấy thông tin sách dựa trên ID_book
+      const books = await Book.find({ _id: { $in: bookIds } });
+  
+      // Tạo một map để tra cứu thông tin sách nhanh hơn
+      const bookMap = books.reduce((map, book) => {
+        map[book._id] = book;
+        return map;
+      }, {});
+  
+      // Tạo map để đếm số lượt mượn sách
+      const borrowCountMap = {};
+      for (const ticket of borrowTickets) {
+        const copy = copyBooks.find(c => c._id.toString() === ticket.ID_copy.toString());
+        if (copy) {
+          const bookId = copy.ID_book.toString();
+          borrowCountMap[bookId] = (borrowCountMap[bookId] || 0) + 1;
+        }
+      }
+  
+      // Chuyển đổi map thành danh sách và thêm thông tin sách
+      const mostBorrowedBooks = Object.entries(borrowCountMap)
+        .map(([bookId, borrowCount]) => {
+          const bookInfo = bookMap[bookId];
+          return {
+            _id: bookId,
+            name: bookInfo?.name,
+            imageUrl: bookInfo?.imageUrl,
+            borrowCount,
+          };
+        })
+        .sort((a, b) => b.borrowCount - a.borrowCount) // Sắp xếp giảm dần theo số lượt mượn
+        .slice(0, limit); // Giới hạn số kết quả
+  
+      // Trả về kết quả
+      res.status(200).json({
+        message: 'Most Borrowed Books',
+        data: mostBorrowedBooks,
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({
+        message: 'Something went wrong',
+        error: err.message,
+      });
+    }
+  });
+  
 
 module.exports = router;
