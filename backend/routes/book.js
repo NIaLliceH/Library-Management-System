@@ -284,7 +284,7 @@ router.put('/:id', async (req, res) => {
           return {
             insertOne: {
               document: {
-                bookID: bookId,
+                ID_book: bookId,
                 shell: copy.shell || "Default Shell",
                 status: copy.status || "available",
               },
