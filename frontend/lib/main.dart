@@ -1,27 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/constants.dart';
-import 'package:frontend/globals.dart';
 import 'package:frontend/screens/history_page.dart';
 import 'package:frontend/screens/home_page.dart';
 import 'package:frontend/screens/login_page.dart';
 import 'package:frontend/screens/profile_page.dart';
 import 'package:frontend/screens/tickets_page.dart';
 import 'package:google_fonts/google_fonts.dart';
-
 import 'auth_service.dart';
-import 'models/user.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // check if user is logged in
-  bool isLoggedIn = await AuthService.getLoginState();
-  runApp(MyApp(isLoggedIn: isLoggedIn));
+  await initGlobals();
+  print(thisUser != null ? 'Logged in as ${thisUser!.name}' : 'Not logged in');
+  runApp(MyApp(isLoggedIn: thisUser != null));
 }
 
 class MyApp extends StatelessWidget {
   final bool isLoggedIn;
 
   const MyApp({super.key, required this.isLoggedIn});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -32,22 +30,42 @@ class MyApp extends StatelessWidget {
       ),
       initialRoute: isLoggedIn ? '/' : '/login',
       routes: {
-        '/': (context) =>  MainPage(),
+        '/': (context) => MainPage(),
         '/login': (context) => LoginPage(),
       },
-      // home: LoginPage(), // always start with login page
     );
   }
 }
 
-class MainPage extends StatefulWidget {
+class MainPage extends StatelessWidget {
   const MainPage({super.key});
 
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<void>(
+      future: initGlobals(), // Make sure to call initGlobals here
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        } else if (thisUser == null) {
+          return Center(child: Text('User not logged in')); // handle error when using thisUser
+        } else {
+          // Return the main content if user is initialized
+          return _MainPageContent();
+        }
+      },
+    );
+  }
+}
+
+class _MainPageContent extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => _MainPageState();
 }
 
-class _MainPageState extends State<MainPage> {
+class _MainPageState extends State<_MainPageContent> {
   int _selectedIndex = 0;
 
   late final List<Widget> _pages;
@@ -104,7 +122,6 @@ class _MainPageState extends State<MainPage> {
           unselectedItemColor: kBase2,
           backgroundColor: kBase3,
           onTap: _onItemTapped,
-
         ),
       ),
     );

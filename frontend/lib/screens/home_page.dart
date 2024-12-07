@@ -1,9 +1,9 @@
 import 'package:frontend/constants.dart';
 import 'package:flutter/material.dart';
-import 'package:frontend/globals.dart';
 import 'package:frontend/screens/search_result.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:frontend/api_service.dart';
+import 'package:frontend/auth_service.dart';
 import 'book_view.dart';
 import 'category_result.dart';
 
@@ -29,7 +29,7 @@ class _HomePageState extends State<HomePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Hi, ${thisUser.name}',
+                'Hi, ${thisUser!.name}',
                 style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,

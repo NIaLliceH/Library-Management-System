@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/api_service.dart';
-import 'package:frontend/globals.dart';
 import 'package:frontend/utils.dart';
 import 'package:frontend/constants.dart';
 import 'package:frontend/models/book.dart';
 
+import '../auth_service.dart';
+
 class BookView extends StatelessWidget {
   final Book? book;
   final String bookId;
-  const BookView({super.key, required this.bookId, this.book});
+  final String userId = thisUser!.id;
+  BookView({super.key, required this.bookId, this.book});
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +34,7 @@ class BookView extends StatelessWidget {
           ),
         ),
         body: FutureBuilder(
-          future: book != null ? ApiService.getBookDetails(book!, thisUser.id) : ApiService.getBookById(bookId, thisUser.id),
+          future: book == null ? ApiService.getBookById(bookId, userId) : ApiService.getBookDetails(book!, userId),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return Center(
@@ -79,11 +81,12 @@ class BookView extends StatelessWidget {
                       ],
                     ),
                   ),
-                  Align(
+                  Container(
+                    margin: EdgeInsets.only(bottom: 20),
                     alignment: Alignment.bottomCenter,
                     child: FloatingActionButton.extended(
-                      label: Text('Hold this book'),
-                      backgroundColor: isButtonDisabled ? Colors.grey : kBase3,
+                      label: Text('Hold this book', style: TextStyle(color: Colors.white)),
+                      backgroundColor: isButtonDisabled ? Colors.grey : holdButton,
                       onPressed: isButtonDisabled ?
                       null
                       : () {
@@ -94,7 +97,7 @@ class BookView extends StatelessWidget {
                             final DateTime deadline = now.add(Duration(days: maxHoldTicketDays));
 
                             return AlertDialog(
-                              title: Text('Hold Ticket Information'),
+                              title: Text('Hold Ticket', style: TextStyle(color: kBase3), textAlign: TextAlign.center),
                               content: Column(
                                 mainAxisSize: MainAxisSize.min,
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -106,7 +109,7 @@ class BookView extends StatelessWidget {
                                   Utils.displayInfo("Due date", deadline),
                                   Text("You must come to the library to borrow "
                                       "this book before the due date, otherwise "
-                                      "your hold ticket will be canceled."),
+                                      "your hold ticket will be canceled.", style: TextStyle(color: Colors.red)),
                                 ],
                               ),
                               actions: [
@@ -117,9 +120,13 @@ class BookView extends StatelessWidget {
                                   child: Text('Cancel'),
                                 ),
                                 ElevatedButton(
+                                  // set the button color to confirmButton
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: confirmButton,
+                                  ),
                                   onPressed: () async {
                                     try {
-                                      final message = await ApiService.createHoldTicket(thisUser.id, bookId);
+                                      final message = await ApiService.createHoldTicket(userId, bookId);
                                       if (context.mounted) {
                                         ScaffoldMessenger.of(context).showSnackBar(
                                           SnackBar(
@@ -142,7 +149,7 @@ class BookView extends StatelessWidget {
                                       }
                                     }
                                   },
-                                  child: Text('Confirm'),
+                                  child: Text('Confirm', style: TextStyle(color: Colors.white)),
                                 )
                               ],
                             );

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/globals.dart';
 import 'package:frontend/models/borrow_ticket.dart';
 
 import 'models/book.dart';
 import 'models/hold_ticket.dart';
+import 'models/student.dart';
 
 class Utils {
   static String processDisplayValue(dynamic value) {
@@ -22,23 +24,20 @@ class Utils {
 
   static Widget displayInfo(String label, dynamic value) {
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 5),
+      padding: EdgeInsets.symmetric(vertical: 10),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             '$label: ',
             style: TextStyle(
-              // fontSize: 16,
               fontWeight: FontWeight.bold,
             ),
           ),
-          Expanded(
+          Flexible(
             child: Text(
               Utils.processDisplayValue(value),
-              style: TextStyle(
-                fontSize: 16,
-              ),
+              textAlign: TextAlign.right,
             ),
           )
         ],

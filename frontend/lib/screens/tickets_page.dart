@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/constants.dart';
-import 'package:frontend/globals.dart';
 import 'package:frontend/models/hold_ticket.dart';
 import '../api_service.dart';
+import 'package:frontend/auth_service.dart';
 import '../utils.dart';
 import 'hold_ticket_view.dart';
 
 class TicketsPage extends StatefulWidget {
-  final String userId = thisUser.id;
+  final String userId = '';
   TicketsPage({super.key});
 
   @override

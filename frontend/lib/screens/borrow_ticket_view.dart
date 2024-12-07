@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/globals.dart';
+import 'package:frontend/auth_service.dart';
 import 'package:frontend/models/borrow_ticket.dart';
 import 'package:frontend/screens/book_view.dart';
 import '../api_service.dart';
@@ -9,7 +9,7 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
 class BorrowTicketView extends StatelessWidget {
   final BorrowTicket ticket;
-  final String userId = thisUser.id;
+  final String userId = thisUser!.id;
   BorrowTicketView({super.key, required this.ticket});
 
   @override

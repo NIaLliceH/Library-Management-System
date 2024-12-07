@@ -1,14 +1,7 @@
-import 'package:frontend/models/user.dart';
+import 'dart:convert';
 
-User thisUser = User(
-    id: '',
-    name: '',
-    email: '',
-    avatarUrl: '',
-    gender: '',
-    address: '',
-    phoneNum: ''
-); // fake data since WidgetsFlutterBinding.ensureInitialized() is called
+import 'package:frontend/models/user.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void test({String id = '1'}) {
   print('test $id');

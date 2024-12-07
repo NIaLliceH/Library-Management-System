@@ -18,8 +18,8 @@ class ApiService {
   static Future<List<Book>> getAllBooks() async {
     final response = await http.get(Uri.parse('$baseUrl/books'));
     if (response.statusCode == 200) {
-      List<dynamic> body = jsonDecode(response.body);
-      List<Book> books = body.map((dynamic item) => Book.fromBasicJson(item)).toList();
+      List<dynamic> data = jsonDecode(response.body)['data'];
+      List<Book> books = data.map<Book>((dynamic item) => Book.fromBasicJson(item)).toList();
       return books;
     } else {
       throw 'Failed to load books';
@@ -29,7 +29,8 @@ class ApiService {
   static Future<Book> getBookDetails(Book book, String userId) async {
     final response = await http.get(Uri.parse('$baseUrl/books/${book.id}/$userId'));
     if (response.statusCode == 200) {
-      book.updateDetails(jsonDecode(response.body));
+      dynamic data = jsonDecode(response.body)['data'];
+      book.updateDetails(data);
       return book;
     } else {
       throw 'Failed to load book details';
@@ -37,11 +38,11 @@ class ApiService {
   }
 
   static Future<Book> getBookById(String id, String userId) async {
-    final response = await http.get(Uri.parse('$baseUrl/books/$id/$userId'));
+    final response = await http.get(Uri.parse('$baseUrl/books/$id?userId=$userId'));
     if (response.statusCode == 200) {
-      dynamic json = jsonDecode(response.body);
-      Book book = Book.fromBasicJson(json);
-      book.updateDetails(json);
+      dynamic data = jsonDecode(response.body)['data'];
+      Book book = Book.fromBasicJson(data);
+      book.updateDetails(data);
       return book;
     } else {
       throw 'Failed to load book';
@@ -55,8 +56,8 @@ class ApiService {
 
     final response = await http.get(Uri.parse('$baseUrl/books/category/$category'));
     if (response.statusCode == 200) {
-      List<dynamic> body = jsonDecode(response.body);
-      List<Book> books = body.map((dynamic item) => Book.fromBasicJson(item)).toList();
+      List<dynamic> data = jsonDecode(response.body)['data'];
+      List<Book> books = data.map<Book>((dynamic item) => Book.fromBasicJson(item)).toList();
       return books;
     } else {
       throw 'Failed to load books';
@@ -66,8 +67,8 @@ class ApiService {
   static Future<List<Book>> searchBookByName(String name) async {
     final response = await http.get(Uri.parse('$baseUrl/books/search?name=$name'));
     if (response.statusCode == 200) {
-      List<dynamic> body = jsonDecode(response.body);
-      List<Book> books = body.map((dynamic item) => Book.fromBasicJson(item)).toList();
+      List<dynamic> data = jsonDecode(response.body)['data'];
+      List<Book> books = data.map((dynamic item) => Book.fromBasicJson(item)).toList();
       return books;
     } else if (response.statusCode == 404) {
       throw 'No book found';
@@ -92,8 +93,8 @@ class ApiService {
     }
     final response = await http.get(Uri.parse('$baseUrl/books/$filterString'));
     if (response.statusCode == 200) {
-      List<dynamic> body = jsonDecode(response.body);
-      List<Book> books = body.map((dynamic item) => Book.fromBasicJson(item)).toList();
+      List<dynamic> data = jsonDecode(response.body)['data'];
+      List<Book> books = data.map<Book>((dynamic item) => Book.fromBasicJson(item)).toList();
       return books;
     } else {
       throw 'Failed to load books';
@@ -103,7 +104,7 @@ class ApiService {
   static Future<List<String>> getAllCategories() async {
     final response = await http.get(Uri.parse('$baseUrl/books/categories'));
     if (response.statusCode == 200) {
-      final data = jsonDecode(response.body)['categories']; // !!! data
+      final data = jsonDecode(response.body)['data']; // !!! data
       List<String> categories = data.map<String>((dynamic item) => item.toString()).toList();
       return categories;
     } else {
@@ -177,7 +178,7 @@ class ApiService {
     }
   }
 
-  static Future<User> loginStudent(String username, String password) async {
+  static Future<Student> loginStudent(String username, String password) async {
     final response = await http.post(
       Uri.parse('$baseUrl/authen/login'),
       headers: <String, String>{
@@ -195,7 +196,11 @@ class ApiService {
       if (data['role'] != 'student') {
         throw 'Invalid role';
       }
-      return Student.fromJson(data);
+      Student student = Student.fromJson(data);
+      if (!student.status) {
+        throw 'Account is banned, please contact the library for more information';
+      }
+      return student;
     } else if (response.statusCode == 400) { // !!! should be 401
       throw 'Invalid username or password';
     } else {

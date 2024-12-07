@@ -24,7 +24,7 @@ const Color logoutButton = Color(0xFFFA7070);
 // text color
 const Color placeholderText = Color.fromARGB(255, 167, 167, 167);
 
-const apiUrl = 'http://192.168.22.170:3001/api';
+const apiUrl = 'http://192.168.222.170:3001/api';
 
 // enum type for book category
 enum BookFilter {

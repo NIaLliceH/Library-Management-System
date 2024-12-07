@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:frontend/api_service.dart';
 import 'package:frontend/auth_service.dart';
 import 'package:frontend/constants.dart';
-import 'package:frontend/globals.dart';
+import '../globals.dart';
+import '../models/student.dart';
+import '../models/user.dart';
+
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -12,8 +15,8 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  String _email = 'khanh@hcmut.edu.vn'; // testing
-  String _password = '123';
+  String _email = 'linh@student.com'; // testing
+  String _password = 'password123';
 
   // String _email = '';
   // String _password = '';
@@ -161,9 +164,8 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   onPressed: () async {
                     try {
-                      final user = await ApiService.loginStudent(_email, _password);
-                      thisUser = user;
-                      await AuthService.saveLoginState(true);
+                      User user = await ApiService.loginStudent(_email, _password);
+                      await AuthService.saveLoginState(user);
                       if (context.mounted) {
                         Navigator.pushReplacementNamed(context, '/');
                       }

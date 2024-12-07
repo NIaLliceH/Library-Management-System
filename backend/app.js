@@ -14,6 +14,7 @@ const PORT = 3001;
 
 // Middleware
 app.use(express.json()); // Ensure you have this to parse JSON request bodies
+const cors = require('cors');
 app.use(cors()); 
 
 // MongoDB Connection

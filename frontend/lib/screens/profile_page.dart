@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/auth_service.dart';
-import 'package:frontend/globals.dart';
 import '../constants.dart';
-import '../models/user.dart';
+import '../models/student.dart';
+import '../utils.dart';
 
 class ProfilePage extends StatelessWidget {
-  final User user = thisUser;
+  final Student student = thisUser as Student;
   ProfilePage({super.key});
 
   @override
@@ -33,13 +33,13 @@ class ProfilePage extends StatelessWidget {
               Center(
                 child: CircleAvatar(
                   radius: 60,
-                  backgroundImage: NetworkImage(user.avatarUrl),
+                  backgroundImage: NetworkImage(student.avatarUrl),
                 ),
               ),
               SizedBox(height: 16),
               // Name
               Text(
-                user.name,
+                student.name,
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -49,7 +49,7 @@ class ProfilePage extends StatelessWidget {
               SizedBox(height: 8),
               // Email
               Text(
-                user.email,
+                student.email,
                 style: TextStyle(
                   fontSize: 16,
                   color: Colors.black54,
@@ -57,13 +57,21 @@ class ProfilePage extends StatelessWidget {
               ),
               SizedBox(height: 16),
               // Profile Information
-              _buildInfoRow('Gender', user.gender),
+              Utils.displayInfo('User ID', student.id),
               Divider(),
-              _buildInfoRow('Address', user.address),
+              Utils.displayInfo('MSSV', student.mssv),
               Divider(),
-              _buildInfoRow('Phone Number', user.phoneNum),
+              Utils.displayInfo('Date of Birth', student.dob),
               Divider(),
-              _buildInfoRow('User ID', user.id),
+              Utils.displayInfo('Gender', student.gender),
+              Divider(),
+              Utils.displayInfo('Address', student.address),
+              Divider(),
+              Utils.displayInfo('Join date', student.joinDate),
+              Divider(),
+              Utils.displayInfo('Faculty', student.faculty),
+              Divider(),
+              Utils.displayInfo('Number of Warning', student.numOfWarning),
               SizedBox(height: 32),
               // Logout Button
               Align(
@@ -96,35 +104,6 @@ class ProfilePage extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildInfoRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.black87,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          Flexible(
-            child: Text(
-              value,
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.black54,
-              ),
-              textAlign: TextAlign.right,
-            ),
-          ),
-        ],
       ),
     );
   }

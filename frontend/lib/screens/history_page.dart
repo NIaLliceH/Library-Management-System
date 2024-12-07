@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:frontend/constants.dart';
 import 'package:frontend/screens/borrow_ticket_view.dart';
 import '../api_service.dart';
-import '../globals.dart';
+import 'package:frontend/auth_service.dart';
 import '../utils.dart';
+import 'login_page.dart';
 
 class HistoryPage extends StatelessWidget {
-  // final String userId = thisUser.id;
   const HistoryPage({super.key});
 
   @override
@@ -25,7 +25,7 @@ class HistoryPage extends StatelessWidget {
         ),
       ),
       body: FutureBuilder(
-        future: ApiService.getBorrowTicketsOfUser(thisUser.id),
+        future: ApiService.getBorrowTicketsOfUser(thisUser!.id),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(

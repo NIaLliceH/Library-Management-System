@@ -110,6 +110,7 @@ router.post('/login', async (req, res) => {
       return res.status(404).json({ message: 'User không tồn tại' });
     }
 
+
     let data = {};
 
     if (account.Use_Role === "admin") {
@@ -120,7 +121,7 @@ router.post('/login', async (req, res) => {
       data = {
         userId: user.ID_user,
         name: user.name,
-        avatarUrl: user.avatar,
+        avatarUrl: user.avatar ? user.avatar : null ,
         email: user.email,
         role: account.Use_Role,
         gender: user.gender,
@@ -136,7 +137,7 @@ router.post('/login', async (req, res) => {
       data = {
         userId: user.ID_user,
         name: user.name,
-        avatarUrl: user.avatar,
+        avatarUrl: user.avatar ? user.avatar : null,
         email: user.email,
         role: account.Use_Role,
         gender: user.gender,
