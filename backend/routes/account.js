@@ -4,6 +4,8 @@ const Account = require('../models/Account'); // Import the Account model
 const User = require('../models/User');       // Import User model
 const Student = require('../models/Student')    // Import student model
 const Admin = require('../models/Admin');
+const HoldTicket = require('../models/HoldTicket'); 
+const BorrowTicket = require('../models/BorrowTicket'); 
 const bcrypt = require('bcrypt');
 // const jwt = require('jsonwebtoken');
 
@@ -184,25 +186,34 @@ router.get('/allstudent', async (req, res) => {
     }, {});
 
     // Lọc danh sách user theo role và ghép thêm trạng thái tài khoản cùng thông tin sinh viên
-    const result = users
-      .filter(user => accountMap[user.ID_user?.toString()])
-      .map(user => {
-        const studentInfo = studentMap[user.ID_user.toString()];
-        return {
-          userId: user.ID_user,
-          name: user.name,
-          gender: user.gender,
-          address: user.address,
-          avatarUrl: user.avatar,
-          joinDate: user.join_date,
-          email: user.email,
-          accountStatus: accountMap[user.ID_user.toString()],
-          MSSV: studentInfo ? studentInfo.MSSV : 'N/A',
-          dob: studentInfo ? studentInfo.dob : 'N/A',
-          faculty: studentInfo ? studentInfo.faculty : 'N/A',
-          NoWarning: studentInfo ? studentInfo.NoWarning : 'N/A',
-        };
-      });
+    const result = await Promise.all(
+      users
+        .filter(user => accountMap[user.ID_user?.toString()])
+        .map(async (user) => {
+          const studentInfo = studentMap[user.ID_user.toString()];
+
+          // Đếm số lượng holdTicket và borrowTicket liên quan đến ID_student
+          const holdTicketCount = await HoldTicket.countDocuments({ ID_student: user.ID_user });
+          const borrowTicketCount = await BorrowTicket.countDocuments({ ID_student: user.ID_user });
+
+          return {
+            userId: user.ID_user,
+            name: user.name,
+            gender: user.gender,
+            address: user.address,
+            avatarUrl: user.avatar,
+            joinDate: user.join_date,
+            email: user.email,
+            accountStatus: accountMap[user.ID_user.toString()],
+            MSSV: studentInfo ? studentInfo.MSSV : 'N/A',
+            dob: studentInfo ? studentInfo.dob : 'N/A',
+            faculty: studentInfo ? studentInfo.faculty : 'N/A',
+            noWarning: studentInfo ? studentInfo.NoWarning : 'N/A',
+            numHold: holdTicketCount,
+            numBorrow: borrowTicketCount
+          };
+        })
+    );
 
     res.status(200).json({
       message: 'Danh sách học sinh',
@@ -215,6 +226,7 @@ router.get('/allstudent', async (req, res) => {
     });
   }
 });
+
 
 
 module.exports = router;
