@@ -15,16 +15,16 @@ router.get('/', async (req, res) => {
       // Tính toán NoCopies
       const totalCopies = await CopyBook.countDocuments({ ID_book: book._id });
       const borrowedOrReservedCopies = await CopyBook.countDocuments({ ID_book: book._id, status: { $in: ['borrowed', 'reserved'] } });
-      const NoAvaiCopies = totalCopies - borrowedOrReservedCopies;
+      const noAvaiCopies = totalCopies - borrowedOrReservedCopies;
       
       result.push({
         bookId: book._id,
         name: book.name,
         imageUrl: book.imageUrl,
         category: book.category,
-        author: authors.map(a => a.author),
+        authors: authors.map(a => a.author),
         edition: book.edition,
-        NoAvaiCopies,
+        noAvaiCopies,
       });
     }
 
@@ -64,16 +64,16 @@ router.get('/category/:category', async (req, res) => {
       // Tính toán NoCopies
       const totalCopies = await CopyBook.countDocuments({ ID_book: book._id });
       const borrowedOrReservedCopies = await CopyBook.countDocuments({ ID_book: book._id, status: { $in: ['borrowed', 'reserved'] } });
-      const NoAvaiCopies = totalCopies - borrowedOrReservedCopies;
+      const noAvaiCopies = totalCopies - borrowedOrReservedCopies;
       
       result.push({ 
         bookId: book._id,
         name: book.name,
         imageUrl: book.imageUrl,
         category: book.category,
-        author: authors.map(a => a.author),
+        authors: authors.map(a => a.author),
         edition: book.edition,
-        NoAvaiCopies,
+        noAvaiCopies,
       });
     }
     res.json({
@@ -106,16 +106,16 @@ router.get('/search', async (req, res) => {
       // Tính toán NoCopies
       const totalCopies = await CopyBook.countDocuments({ ID_book: book._id });
       const borrowedOrReservedCopies = await CopyBook.countDocuments({ ID_book: book._id, status: { $in: ['borrowed', 'reserved'] } });
-      const NoAvaiCopies = totalCopies - borrowedOrReservedCopies;
+      const noAvaiCopies = totalCopies - borrowedOrReservedCopies;
       
       result.push({ 
         bookId: book._id,
         name: book.name,
         imageUrl: book.imageUrl,
         category: book.category,
-        author: authors.map(a => a.author),
+        authors: authors.map(a => a.author),
         edition: book.edition,
-        NoAvaiCopies,
+        noAvaiCopies,
       });
     }
     res.json({
@@ -140,16 +140,16 @@ router.get('/newest', async (req, res) => {
         // Tính toán NoCopies
         const totalCopies = await CopyBook.countDocuments({ ID_book: book._id });
         const borrowedOrReservedCopies = await CopyBook.countDocuments({ ID_book: book._id, status: { $in: ['borrowed', 'reserved'] } });
-        const NoAvaiCopies = totalCopies - borrowedOrReservedCopies;
+        const noAvaiCopies = totalCopies - borrowedOrReservedCopies;
         
         result.push({ 
           bookId: book._id,
           name: book.name,
           imageUrl: book.imageUrl,
           category: book.category,
-          author: authors.map(a => a.author),
+          authors: authors.map(a => a.author),
           edition: book.edition,
-          NoAvaiCopies,
+          noAvaiCopies,
         });
       }
       res.json({
@@ -179,21 +179,38 @@ router.get('/top-rated', async (req, res) => {
       };
     });
 
-
+    
     // Sắp xếp và chọn 5 sách có đánh giá cao nhất
-    const topRatedBooks = books
+    const topRatedBooks = booksWithAvgRate
       .sort((a, b) => b.AvgRate - a.AvgRate)
-      .slice(0, 5)
-      .map(book => ({
-        _id: book._id,
-        name: book.name,
-        avgRating: book.avgRate ? book.avgRate : null,
-        imageUrl: book.imageUrl, 
-      }));
+      .slice(0, 5);
+
+    // Thêm thông tin về số bản sao có sẵn và tác giả
+    const topRatedBooksWithDetails = await Promise.all(
+      topRatedBooks.map(async book => {
+        const [authors, copies] = await Promise.all([
+          AuthorBook.find({ ID_book: book._id }, 'author').lean(),
+          CopyBook.find({ ID_book: book._id, status: 'available' }).lean()
+        ]);
+
+        const noAvaiCopies = copies.length;
+
+        return {
+          bookId: book._id,
+          name: book.name,
+          avgRating: book.AvgRate,
+          imageUrl: book.imageUrl || null,
+          category: book.category,
+          authors: authors.map(a => a.author),
+          edition: book.edition || null,
+          noAvaiCopies,
+        };
+      })
+    );
 
     res.json({
       message: "Success",
-      data:topRatedBooks,
+      data: topRatedBooksWithDetails,
     });
   } catch (error) {
     res.status(500).json({ message: 'Lỗi khi lấy sách có đánh giá cao nhất', error });
@@ -203,38 +220,47 @@ router.get('/top-rated', async (req, res) => {
 router.put('/:id', async (req, res) => {
   try {
     const bookId = req.params.id;
-    const updates = req.body; 
+    const { copies, ...updates } = req.body;
 
+    // Tìm sách theo ID
     const book = await Book.findById(bookId);
     if (!book) {
       return res.status(404).json({ message: 'Không tìm thấy sách để cập nhật' });
     }
-    Object.keys(updates).forEach(key => {
-      book[key] = updates[key]; 
-    });
 
+    // Cập nhật thông tin sách
+    Object.keys(updates).forEach((key) => {
+      if (updates[key] !== undefined) {
+        book[key] = updates[key];
+      }
+    });
     await book.save();
 
-    if (copies && copies.length > 0) {
-      for (const copy of copies) {
-        if (copy._id) {
-          await CopyBook.findByIdAndUpdate(copy._id, {
-            shell: copy.shell,
-            status: copy.status,
-            publish_date: copy.publish_date,
-            edition: copy.edition,
-          });
-        } else {
-          const newCopy = new CopyBook({
-            ID_book: bookId,
-            shell: copy.shell,
-            status: copy.status || "available",
-            publish_date: copy.publish_date || new Date().toISOString(),
-            edition: copy.edition || "1st edition",
-          });
-          await newCopy.save();
-        }
-      }
+    // Xử lý cập nhật bản sao
+    if (copies && Array.isArray(copies)) {
+      await Promise.all(
+        copies.map(async (copy) => {
+          if (copy._id) {
+            // Cập nhật bản sao đã tồn tại
+            await CopyBook.findByIdAndUpdate(copy._id, {
+              shell: copy.shell,
+              status: copy.status,
+              publish_date: copy.publish_date,
+              edition: copy.edition,
+            });
+          } else {
+            // Tạo bản sao mới
+            const newCopy = new CopyBook({
+              ID_book: bookId,
+              shell: copy.shell,
+              status: copy.status || "available",
+              publish_date: copy.publish_date || new Date().toISOString(),
+              edition: copy.edition || "1st edition",
+            });
+            await newCopy.save();
+          }
+        })
+      );
     }
 
     res.status(200).json({ message: 'Cập nhật sách thành công', data: book });
@@ -242,6 +268,7 @@ router.put('/:id', async (req, res) => {
     res.status(500).json({ message: 'Lỗi khi cập nhật sách', error });
   }
 });
+
 // Get a book by ID
 router.get('/:id', async (req, res) => {
   try {
@@ -289,7 +316,7 @@ router.get('/:id', async (req, res) => {
     const response = {
       bookId: book._id,
       name: book.name,
-      authors: authors.length > 0 ? authors.map(a => a.author) : null, // Danh sách tác giả
+      authors: authors.map(a => a.author), // Danh sách tác giả
       category: book.category,
       publisher: book.Publisher || null,
       noCopies: totalCopies,
@@ -300,6 +327,11 @@ router.get('/:id', async (req, res) => {
       edition: book.edition ? book.edition : null,
       publishDate: book.datePublish ? book.datePublish : null,
       canHold: canHold ? 1 : 0,
+      copies: copies.map(copy => ({
+        copyId: copy._id,
+        shell: copy.shell,
+        status: copy.status,
+      })),
     };
 
     // Trả về JSON
@@ -315,49 +347,73 @@ router.get('/:id', async (req, res) => {
 
 
 // POST route to add a new book
+// POST route to add a new book
 router.post('/', async (req, res) => {
   try {
     const {
       name,
-      NoCopies,
-      NoValidCopies,
-      NoPages,
-      AvgRate,
-      Publisher,
-      Description,
+      noValidCopies,
+      noPages,
+      publisher,
+      description,
       imageUrl,
       copies,
-      category 
+      category,
+      authors,
     } = req.body;
 
+    // Kiểm tra các trường bắt buộc
+    if (!name || !category) {
+      return res.status(400).json({ message: 'Vui lòng cung cấp tên sách và thể loại.' });
+    }
+
+    // Tạo sách mới
     const newBook = new Book({
       name,
-      NoCopies,
-      NoValidCopies,
-      NoPages,
-      AvgRate,
-      Publisher,
-      Description,
-      imageUrl,
-      category, 
+      noValidCopies: noValidCopies || 0,
+      nameoPages: noPages || 0,
+      publisher: publisher || "Unknown Publisher",
+      description: description || "No description available",
+      imageUrl: imageUrl || null,
+      category,
     });
 
+    // Lưu thông tin sách
     const savedBook = await newBook.save();
 
-    if (copies && copies.length > 0) {
+    // Xử lý danh sách bản sao (copies) nếu có
+    let savedCopies = [];
+    if (copies && Array.isArray(copies)) {
       const copyBooks = copies.map(copy => ({
         ID_book: savedBook._id,
-        shell: copy.shell,
+        shell: copy.shell || "Default Shell",
         status: copy.status || "available",
         publish_date: copy.publish_date || new Date().toISOString(),
         edition: copy.edition || "1st edition",
       }));
-      await CopyBook.insertMany(copyBooks);
+      savedCopies = await CopyBook.insertMany(copyBooks);
     }
 
-    res.status(201).json({ message: 'Thêm sách thành công', book: savedBook });
+    // Xử lý danh sách tác giả (authors) nếu có
+    let savedAuthors = [];
+    if (authors && Array.isArray(authors)) {
+      const authorDocs = authors.map(author => ({
+        ID_book: savedBook._id,
+        author,
+      }));
+      savedAuthors = await AuthorBook.insertMany(authorDocs);
+    }
+
+    res.status(201).json({
+      message: 'Success',
+      data: {
+        book: savedBook,
+        copies: savedCopies,
+        authors: savedAuthors,
+      },
+    });
   } catch (error) {
-    res.status(400).json({ message: 'Lỗi khi thêm thông tin sách', error });
+    res.status(500).json({ message: 'Lỗi khi thêm thông tin sách', error });
   }
 });
 
@@ -407,22 +463,40 @@ router.delete('/:id', async (req, res) => {
     res.status(500).json({ message: 'Lỗi khi xóa sách', error });
   }
 });
-// Xóa một bản sao cụ thể
-router.delete('/copies/:id', async (req, res) => {
+router.delete('/:id/copies', async (req, res) => {
   try {
-    const copyId = req.params.id;
+    const { id: bookId } = req.params; // Lấy bookId từ URL
+    const { copyIds } = req.body; // Lấy danh sách copyIds từ body
 
-    const copy = await CopyBook.findById(copyId);
-    if (!copy) {
-      return res.status(404).json({ message: 'Không tìm thấy bản sao để xóa' });
+    // Kiểm tra xem danh sách copyIds có được cung cấp không
+    if (!Array.isArray(copyIds) || copyIds.length === 0) {
+      return res.status(400).json({ message: 'Vui lòng cung cấp danh sách copyIds để xóa' });
     }
 
-    await CopyBook.findByIdAndDelete(copyId);
+    // Kiểm tra xem sách có tồn tại không
+    const book = await Book.findById(bookId);
+    if (!book) {
+      return res.status(404).json({ message: 'Không tìm thấy sách để xóa bản sao' });
+    }
 
-    res.status(200).json({ message: 'Xóa bản sao thành công' });
+    // Xóa các bản sao có trong danh sách copyIds
+    const deleteResult = await CopyBook.deleteMany({
+      _id: { $in: copyIds },
+      ID_book: bookId, // Đảm bảo bản sao thuộc về sách được chỉ định
+    });
+
+    // Kiểm tra số lượng bản sao đã bị xóa
+    if (deleteResult.deletedCount === 0) {
+      return res.status(404).json({ message: 'Không tìm thấy bản sao nào để xóa' });
+    }
+
+    res.status(200).json({
+      message: `Đã xóa thành công ${deleteResult.deletedCount} bản sao`,
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Lỗi khi xóa bản sao', error });
+    res.status(500).json({ message: 'Lỗi khi xóa bản sao của sách', error });
   }
 });
+
 
 module.exports = router;

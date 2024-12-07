@@ -8,6 +8,60 @@ const Book = require("../models/Book");
 const CopyBook = require('../models/CopyBook');
 const HoldTicket = require('../models/HoldTicket');
 
+
+
+router.get('/hold', async (req, res) => {
+    try {
+
+        // Lấy danh sách các holdTicket của sinh viên
+        const holdTickets = await holdTicket.find().exec();
+
+        const now = new Date();
+
+        // Xử lý danh sách holdTicket
+        const response = await Promise.all(
+            holdTickets.map(async (ticket) => {
+                const expired = now > ticket.day_expired; // Kiểm tra hết hạn
+                const daysLeft = expired
+                    ? 0
+                    : Math.ceil((ticket.day_expired - now) / (1000 * 60 * 60 * 24)); // Ngày còn lại
+
+                // Lấy thông tin Author từ AuthorBook
+                const authorData = await AuthorBook.find({ ID_book: ticket.ID_book }).exec();
+                const authors = authorData.map(author => author.author); 
+                            
+                //const author = authorData ? authorData.author : 'Unknown';
+                
+                const nameData = await Book.findOne({ _id: ticket.ID_book });
+
+                const nameBook = nameData ? nameData.name : 'Unknown';
+                //const urlBook = nameData ? nameData.imageUrl : 'Unknown';
+
+                data = {
+                    "holdTicket_ID": ticket._id,
+                    // "bookID": ticket.ID_book, 
+                    "title": nameBook, 
+                    "author": authors, 
+                    "category": nameData.category, 
+                    "status": ticket.status, 
+                    "createdDate": ticket.day_create, 
+                    "expiredDate": ticket.day_expired,
+                    "dayLeft": daysLeft
+                }
+
+                return data;
+            })
+        );
+
+        // Trả kết quả về client
+        res.status(200).json(response);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Something went wrong', error: err.message });
+    }
+});
+
+
 router.get('/:id_user/hold', async (req, res) => {
     try {
         const { id_user } = req.params;
@@ -98,6 +152,62 @@ router.get('/hold_infor/:id_ticket', async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Something went wrong', error: err.message });
+    }
+});
+
+
+router.get('/borrow', async (req, res) => {
+    try {
+        const {id_user} = req.params;
+
+        // Lấy danh sách tất cả borrow tickets
+        const borrowTickets = await borrowTicket.find().exec();
+        
+        const now = new Date();
+        // Xử lý danh sách borrowTicket
+        const response = await Promise.all(
+            borrowTickets.map(async (ticket) => {
+                const expired = now > ticket.return_day; // Kiểm tra hết hạn
+                const daysLeft = expired
+                    ? 0
+                    : Math.ceil((ticket.return_day - now) / (1000 * 60 * 60 * 24)); // Ngày còn lại
+
+                
+                //Lấy ID_book từ ID_copy
+                const copyData = await CopyBook.findOne({ _id: ticket.ID_copy })
+                const id_book = copyData ? copyData.ID_book : '0';
+
+                // Lấy thông tin Author từ AuthorBook
+                const authorData = await AuthorBook.find({ ID_book: id_book }).exec();
+                const authors = authorData.map(author => author.author); 
+
+
+                // Lấy thông tin Category từ CategoryBook
+                const nameData = await Book.findOne({ _id: id_book });
+                const nameBook = nameData ? nameData.name : 'Unknown';
+
+                const returnedDate = ticket.returnedDate ? ticket.returnedDate : "Not Yet";
+
+
+
+                data = {
+                    "borrowTicket_ID": ticket._id,
+                    "title": nameBook, 
+                    "author": authors, 
+                    "createdDate": ticket.borrow_day, 
+                    "expiredDate": ticket.return_day,
+                    "returnedDate": returnedDate,
+                    "status": ticket.status, 
+                    "dayLeft": daysLeft
+                }
+                return data;
+            })
+        );
+
+        res.status(200).json(response);
+    } catch(err) {
+        console.log(err);
+        res.status(500).json({message: 'Something went wrong', error: err.message});
     }
 });
 
