@@ -248,7 +248,7 @@ router.put('/:bookId/copies/:copyId', async (req, res) => {
 router.put('/:id', async (req, res) => {
   try {
     const bookId = req.params.id;
-    const { copies, ...updates } = req.body;
+    const { copies,authors, ...updates } = req.body;
 
     // Tìm sách theo ID
     const book = await Book.findById(bookId);
@@ -292,19 +292,28 @@ router.put('/:id', async (req, res) => {
           };
         }
       });
-
+      
       const bulkWriteResult = await CopyBook.bulkWrite(bulkOps);
       updatedCopies = {
         modifiedCount: bulkWriteResult.modifiedCount || 0,
         insertedCount: bulkWriteResult.insertedCount || 0,
       };
     }
-
+    let updatedAuthors = [];
+    if (authors && Array.isArray(authors)) {
+      await AuthorBook.deleteMany({ ID_book: bookId });
+      const authorDocs = authors.map((author) => ({
+        ID_book: bookId,
+        author,
+      }));
+      updatedAuthors = await AuthorBook.insertMany(authorDocs);
+    }
     res.status(200).json({
       message: 'Cập nhật sách thành công',
       data: {
         book,
         updatedCopies,
+        updatedAuthors,
       },
     });
   } catch (error) {
