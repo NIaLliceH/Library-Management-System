@@ -213,13 +213,13 @@ router.get('/borrow', async (req, res) => {
 
 router.get('/:id_user/borrow', async (req, res) => {
     try {
-        const {id_user} = req.params;
+        const { id_user } = req.params;
 
-        //Get list borrow ticket of student
-        const borrowTickets = await borrowTicket.find({ID_student: id_user})
-            .exec();
+        // Lấy danh sách borrow ticket của người dùng
+        const borrowTickets = await borrowTicket.find({ ID_student: id_user }).exec();
         
         const now = new Date();
+
         // Xử lý danh sách borrowTicket
         const response = await Promise.all(
             borrowTickets.map(async (ticket) => {
@@ -228,44 +228,49 @@ router.get('/:id_user/borrow', async (req, res) => {
                     ? 0
                     : Math.ceil((ticket.return_day - now) / (1000 * 60 * 60 * 24)); // Ngày còn lại
 
-                
-                //Lấy ID_book từ ID_copy
-                const copyData = await CopyBook.findOne({ _id: ticket.ID_copy })
-                const id_book = copyData ? copyData.ID_book : '0';
+                // Lấy ID_book từ ID_copy
+                const copyData = await CopyBook.findOne({ _id: ticket.ID_copy });
+                const id_book = copyData ? copyData.ID_book : null;
 
-                // Lấy thông tin Author từ AuthorBook
-                const authorData = await AuthorBook.find({ ID_book: id_book }).exec();
-                const authors = authorData.map(author => author.author); 
+                let authors = [];
+                if (id_book) {
+                    try {
+                        // Chỉ truy vấn AuthorBook nếu ID_book tồn tại và hợp lệ
+                        const authorData = await AuthorBook.find({ ID_book: id_book }).exec();
+                        authors = authorData.map(author => author.author);
+                    } catch (error) {
+                        console.warn(`Failed to fetch authors for book ID: ${id_book}`, error.message);
+                    }
+                }
 
-
-                // Lấy thông tin Category từ CategoryBook
-                const nameData = await Book.findOne({ _id: id_book });
+                // Lấy thông tin sách
+                const nameData = id_book ? await Book.findOne({ _id: id_book }) : null;
                 const nameBook = nameData ? nameData.name : 'Unknown';
 
-                const returnedDate = ticket.returnedDate ? ticket.returnedDate : "Not Yet";
+                const returnedDate = ticket.returnedDate || "Not Yet";
 
-
-
-                data = {
-                    "borrowTicket_ID": ticket._id,
-                    "title": nameBook, 
-                    "author": authors, 
-                    "createdDate": ticket.borrow_day, 
-                    "expiredDate": ticket.return_day,
-                    "returnedDate": returnedDate,
-                    "status": ticket.status, 
-                    "dayLeft": daysLeft
-                }
+                // Chuẩn bị dữ liệu trả về
+                const data = {
+                    borrowTicket_ID: ticket._id,
+                    title: nameBook,
+                    author: authors,
+                    createdDate: ticket.borrow_day,
+                    expiredDate: ticket.return_day,
+                    returnedDate: returnedDate,
+                    status: ticket.status,
+                    dayLeft: daysLeft
+                };
                 return data;
             })
         );
 
         res.status(200).json(response);
-    } catch(err) {
-        console.log(err);
-        res.status(500).json({message: 'Something went wrong', error: err.message});
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Something went wrong', error: err.message });
     }
 });
+
 
 router.get('/borrow_infor/:id_ticket', async (req, res) => {
     try {
