@@ -3,6 +3,7 @@ const router = express.Router();
 const User = require('../models/User'); // Import model User
 const Account = require('../models/Account');
 const Book = require('../models/Book'); // Thay thế bằng đường dẫn mô hình của bạn
+const CopyBook = require('../models/CopyBook');
 const HoldTicket = require('../models/HoldTicket'); // Thay thế bằng đường dẫn mô hình của bạn
 const BorrowTicket = require('../models/BorrowTicket'); // Thay thế bằng đường dẫn mô hình của bạn
 
@@ -135,6 +136,32 @@ router.get('/getnum', async (req, res) => {
     });
   }
 });
+
+router.get('/copybooks/:bookId', async (req, res) => {
+  const { bookId } = req.params;
+
+  try {
+    // Tìm các bản sao với ID_book tương ứng và status là "available"
+    const copyBooks = await CopyBook.find(
+      { ID_book: bookId, status: "available" }, 
+      '_id' // Chỉ lấy trường `_id`
+    );
+    
+    // Trả về danh sách ID
+    const copyBookIds = copyBooks.map(copy => copy._id);
+    res.json({
+      success: true,
+      data: copyBookIds,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+    });
+  }
+});
+
 
 
 module.exports = router;
