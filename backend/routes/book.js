@@ -216,11 +216,39 @@ router.get('/top-rated', async (req, res) => {
     res.status(500).json({ message: 'Lỗi khi lấy sách có đánh giá cao nhất', error });
   }
 });
+// cập nhật copies
+router.put('/:bookId/copies/:copyId', async (req, res) => {
+  try {
+    const { bookId, copyId } = req.params; // Lấy bookId và copyId từ URL
+    const { shell, status } = req.body; // Dữ liệu cần cập nhật
+
+    // Kiểm tra xem bản sao có tồn tại không
+    const copy = await CopyBook.findOne({ _id: copyId, ID_book: bookId });
+    if (!copy) {
+      return res.status(404).json({ message: 'Không tìm thấy bản sao để cập nhật' });
+    }
+
+    // Cập nhật các trường nếu có trong body
+    if (shell !== undefined) copy.shell = shell;
+    if (status !== undefined) copy.status = status;
+
+    // Lưu bản sao sau khi cập nhật
+    const updatedCopy = await copy.save();
+
+    res.status(200).json({
+      message: 'Cập nhật bản sao thành công',
+      data: updatedCopy,
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Lỗi khi cập nhật bản sao', error });
+  }
+});
+
 // Cập nhật sách
 router.put('/:id', async (req, res) => {
   try {
     const bookId = req.params.id;
-    const { copies, ...updates } = req.body;
+    const { copies,authors, ...updates } = req.body;
 
     // Tìm sách theo ID
     const book = await Book.findById(bookId);
@@ -237,33 +265,57 @@ router.put('/:id', async (req, res) => {
     await book.save();
 
     // Xử lý cập nhật bản sao
+    let updatedCopies = [];
     if (copies && Array.isArray(copies)) {
-      await Promise.all(
-        copies.map(async (copy) => {
-          if (copy._id) {
-            // Cập nhật bản sao đã tồn tại
-            await CopyBook.findByIdAndUpdate(copy._id, {
-              shell: copy.shell,
-              status: copy.status,
-              publish_date: copy.publish_date,
-              edition: copy.edition,
-            });
-          } else {
-            // Tạo bản sao mới
-            const newCopy = new CopyBook({
-              ID_book: bookId,
-              shell: copy.shell,
-              status: copy.status || "available",
-              publish_date: copy.publish_date || new Date().toISOString(),
-              edition: copy.edition || "1st edition",
-            });
-            await newCopy.save();
-          }
-        })
-      );
+      const bulkOps = copies.map((copy) => {
+        if (copy._id) {
+          // Cập nhật bản sao đã tồn tại
+          return {
+            updateOne: {
+              filter: { copyID: copy._id, ID_book: bookId },
+              update: {
+                shell: copy.shell,
+                status: copy.status,
+              },
+            },
+          };
+        } else {
+          // Tạo bản sao mới
+          return {
+            insertOne: {
+              document: {
+                ID_book: bookId,
+                shell: copy.shell || "Default Shell",
+                status: copy.status || "available",
+              },
+            },
+          };
+        }
+      });
+      
+      const bulkWriteResult = await CopyBook.bulkWrite(bulkOps);
+      updatedCopies = {
+        modifiedCount: bulkWriteResult.modifiedCount || 0,
+        insertedCount: bulkWriteResult.insertedCount || 0,
+      };
     }
-
-    res.status(200).json({ message: 'Cập nhật sách thành công', data: book });
+    let updatedAuthors = [];
+    if (authors && Array.isArray(authors)) {
+      await AuthorBook.deleteMany({ ID_book: bookId });
+      const authorDocs = authors.map((author) => ({
+        ID_book: bookId,
+        author,
+      }));
+      updatedAuthors = await AuthorBook.insertMany(authorDocs);
+    }
+    res.status(200).json({
+      message: 'Cập nhật sách thành công',
+      data: {
+        book,
+        updatedCopies,
+        updatedAuthors,
+      },
+    });
   } catch (error) {
     res.status(500).json({ message: 'Lỗi khi cập nhật sách', error });
   }
@@ -332,6 +384,7 @@ router.get('/:id', async (req, res) => {
         shell: copy.shell,
         status: copy.status,
       })),
+      imageUrl: book.imageUrl,
     };
 
     // Trả về JSON
@@ -388,8 +441,6 @@ router.post('/', async (req, res) => {
         ID_book: savedBook._id,
         shell: copy.shell || "Default Shell",
         status: copy.status || "available",
-        publish_date: copy.publish_date || new Date().toISOString(),
-        edition: copy.edition || "1st edition",
       }));
       savedCopies = await CopyBook.insertMany(copyBooks);
     }
@@ -463,6 +514,8 @@ router.delete('/:id', async (req, res) => {
     res.status(500).json({ message: 'Lỗi khi xóa sách', error });
   }
 });
+90
+
 router.delete('/:id/copies', async (req, res) => {
   try {
     const { id: bookId } = req.params; // Lấy bookId từ URL

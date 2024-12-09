@@ -4,7 +4,7 @@ const studentSchema = new mongoose.Schema({
   MSSV: { type: String, unique: true, required: true },
   dob: String,
   faculty: String,
-  NoWarning: String,
+  NoWarning: Number,
   ID: {type: mongoose.Schema.Types.ObjectId, ref: 'User'}
 });
 
