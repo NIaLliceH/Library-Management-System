@@ -181,7 +181,7 @@ class BorrowTicketView extends StatelessWidget {
             ElevatedButton(
               onPressed: () async {
                 try {
-                  final message = await ApiService.rateBook(ticket.bookId!, userId, rating);
+                  final message = await ApiService.rateBook(ticket.bookId!, userId, rating, ticket.id);
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
@@ -204,6 +204,8 @@ class BorrowTicketView extends StatelessWidget {
                 }
               },
               child: Text('Submit'),
+              // decorate
+
             )
           ],
         );

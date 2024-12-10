@@ -268,16 +268,19 @@ class ApiService {
     }
   }
 
-  static Future<String> rateBook(
-      String bookId, String userId, int rating) async {
+  static Future<String> rateBook(String bookId, String userId, int rating, String ticketId) async {
+    print('userID = $userId');
+    print('rating = $rating');
+    print('borrowID = $ticketId');
     final response = await http.post(
       Uri.parse('$baseUrl/books/$bookId/rate'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
       body: jsonEncode(<String, dynamic>{
-        'studentId': userId,
+        'userID': userId,
         'rating': rating,
+        'borrowID': ticketId,
       }),
     );
 
