@@ -464,6 +464,44 @@ router.post('/cancel/:ticketID', async (req, res) => {
     }
 });
 
+// API trả sách
+router.post('/returnedBook/:borrowID', async (req, res) => {
+    try {
+        const { borrowID } = req.params; // ID của ticketHold
+  
+      const dateNow = new Date();
+  
+      // Tìm BorrowTicket dựa trên ticketID
+      const borrowTick = await borrowTicket.findOne({ _id: borrowID });
+      if (!borrowTick) {
+        return res.status(404).json({ message: 'Không tìm thấy BorrowTicket' });
+      }
+  
+      // Kiểm tra trạng thái BorrowTicket
+      if (borrowTick.status !== 'borrowing') {
+        return res.status(400).json({ message: 'Sách đã được trả hoặc không ở trạng thái mượn' });
+      }
+  
+      // Cập nhật trạng thái BorrowTicket
+      borrowTick.status = 'returned';
+      borrowTick.returnedDate = dateNow;
+      await borrowTick.save();
+  
+      // Tìm bản sao sách (CopyBook) và cập nhật trạng thái thành 'available'
+      const copyBook = await CopyBook.findOne({ _id: borrowTicket.ID_copy });
+      if (copyBook) {
+        copyBook.status = 'available';
+        await copyBook.save();
+      }
+  
+      res.status(200).json({ message: 'Trả sách thành công' });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: 'Có lỗi xảy ra', error: err.message });
+    }
+  });
+  
+
 
 router.get('/most-borrowed', async (req, res) => {
     try {
