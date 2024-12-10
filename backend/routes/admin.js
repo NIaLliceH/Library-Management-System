@@ -91,8 +91,8 @@ router.get('/getnum', async (req, res) => {
   try {
     // Đếm số lượng tài liệu trong từng collection
     const bookCount = await Book.countDocuments({});
-    const holdTicketCount = await HoldTicket.countDocuments({});
-    const borrowTicketCount = await BorrowTicket.countDocuments({});
+    const holdTicketCount = await HoldTicket.countDocuments({status: "valid"});
+    const borrowTicketCount = await BorrowTicket.countDocuments({status: "borrowing"});
 
     // Tính số sách mượn trong tuần (Thứ 2 - CN)
     const now = new Date();
