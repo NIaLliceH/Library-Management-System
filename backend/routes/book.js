@@ -3,8 +3,9 @@ const router = express.Router();
 const Book = require('../models/Book'); // Import the Book model
 const CopyBook = require('../models/CopyBook');
 const AuthorBook = require('../models/AuthorBook');
+const borrowTicket = require('../models/BorrowTicket');
+const HoldTicket = require('../models/HoldTicket');
 const Student = require('../models/Student')
-
 
 // Get all books
 router.get('/', async (req, res) => {
@@ -325,92 +326,92 @@ router.put('/:id', async (req, res) => {
 
 // Get a book by ID
 router.get('/:id', async (req, res) => {
-  try {
-    const { id } = req.params; // ID của sách
-    const { userID } = req.query;
-
-    // Tìm sách theo ID
-    const book = await Book.findById(id).lean();
-    if (!book) {
-      return res.status(404).json({ message: 'Không tìm thấy sách' });
-    }
-
-    // Nếu có userID, kiểm tra sự tồn tại của user
-    if (userID) {
-      const studentExists = await Student.findOne({ ID: userID }).lean();
-      if (!studentExists) {
-        return res.status(404).json({ message: 'Không tìm thấy userID' });
+    try {
+      const { id } = req.params; // ID của sách
+      const { userID } = req.query;
+  
+      // Tìm sách theo ID
+      const book = await Book.findById(id).lean();
+      if (!book) {
+        return res.status(404).json({ message: 'Không tìm thấy sách' });
       }
-    }
-
-    // Tìm các bản sao của sách
-    const copies = await CopyBook.find({ ID_book: book._id }).lean();
-
-    // Tính tổng số bản sao và số bản sao có thể mượn
-    const totalCopies = copies.length;
-    const availableCopies = copies.filter(copy => copy.status === "available").length;
-
-    // Tìm các tác giả của sách
-    const authors = await AuthorBook.find({ ID_book: book._id }, 'author').lean();
-
-    // Kiểm tra logic canHold
-    let canHold = true;
-
-    if (userID) {
-      // Kiểm tra BorrowTicket với status = 'borrowing'
-      const activeBorrowTicket = await borrowTicket.findOne({
-        ID_student: userID,
-        ID_copy: { $in: copies.map(copy => copy._id) },
-        status: "borrowing",
-      });
-
-      // Kiểm tra HoldTicket với status = 'valid'
-      const validHoldTicket = await HoldTicket.findOne({
-        ID_student: userID,
-        ID_book: book._id,
-        status: "valid",
-      });
-
-      // Đặt canHold thành false nếu bất kỳ điều kiện nào không thỏa mãn
-      if (activeBorrowTicket || availableCopies <= 0 || validHoldTicket) {
-        canHold = false;
+  
+      // Nếu có userID, kiểm tra sự tồn tại của user
+      if (userID) {
+        const studentExists = await Student.findOne({ ID: userID }).lean();
+        if (!studentExists) {
+          return res.status(404).json({ message: 'Không tìm thấy userID' });
+        }
       }
+  
+      // Tìm các bản sao của sách
+      const copies = await CopyBook.find({ ID_book: book._id }).lean();
+  
+      // Tính tổng số bản sao và số bản sao có thể mượn
+      const totalCopies = copies.length;
+      const availableCopies = copies.filter(copy => copy.status === "available").length;
+  
+      // Tìm các tác giả của sách
+      const authors = await AuthorBook.find({ ID_book: book._id }, 'author').lean();
+  
+      // Kiểm tra logic canHold
+      let canHold = true;
+  
+      if (userID) {
+        // Kiểm tra BorrowTicket với status = 'borrowing'
+        const activeBorrowTicket = await borrowTicket.findOne({
+          ID_student: userID,
+          ID_copy: { $in: copies.map(copy => copy._id) },
+          status: "borrowing",
+        });
+  
+        // Kiểm tra HoldTicket với status = 'valid'
+        const validHoldTicket = await HoldTicket.findOne({
+          ID_student: userID,
+          ID_book: book._id,
+          status: "valid",
+        });
+  
+        // Đặt canHold thành false nếu bất kỳ điều kiện nào không thỏa mãn
+        if (activeBorrowTicket || availableCopies <= 0 || validHoldTicket) {
+          canHold = false;
+        }
+      }
+  
+      // Chuẩn bị đối tượng phản hồi
+      const response = {
+        bookId: book._id,
+        name: book.name,
+        imageUrl: book.imageUrl,
+        authors: authors.map(a => a.author), // Danh sách tác giả
+        category: book.category || null,
+        publisher: book.Publisher || null,
+        noCopies: totalCopies,
+        noAvaiCopies: availableCopies,
+        noPages: book.NoPages || null,
+        avgRating: book.avgRate || null,
+        description: book.Description || null,
+        edition: book.edition || null,
+        publishDate: book.datePublish || null,
+        canHold: canHold ? 1 : 0,
+        copies: copies.map(copy => ({
+          copyId: copy._id,
+          shell: copy.shell || null,
+          status: copy.status || null,
+        })),
+      };
+  
+      // Trả về JSON
+      return res.json({
+        message: "Success",
+        data: response,
+      });
+    } catch (error) {
+      // Xử lý lỗi
+      console.error(error); // Ghi log lỗi để kiểm tra
+      return res.status(500).json({ message: 'Lỗi khi lấy thông tin sách', error: error.message });
     }
-
-    // Chuẩn bị đối tượng phản hồi
-    const response = {
-      bookId: book._id,
-      name: book.name,
-      imageUrl: book.imageUrl,
-      authors: authors.map(a => a.author), // Danh sách tác giả
-      category: book.category || null,
-      publisher: book.Publisher || null,
-      noCopies: totalCopies,
-      noAvaiCopies: availableCopies,
-      noPages: book.NoPages || null,
-      avgRating: book.avgRate || null,
-      description: book.Description || null,
-      edition: book.edition || null,
-      publishDate: book.datePublish || null,
-      canHold: canHold ? 1 : 0,
-      copies: copies.map(copy => ({
-        copyId: copy._id,
-        shell: copy.shell || null,
-        status: copy.status || null,
-      })),
-    };
-
-    // Trả về JSON
-    return res.json({
-      message: "Success",
-      data: response,
-    });
-  } catch (error) {
-    // Xử lý lỗi
-    console.error(error); // Ghi log lỗi để kiểm tra
-    return res.status(500).json({ message: 'Lỗi khi lấy thông tin sách', error: error.message });
-  }
-});
+  });
 
 
 // POST route to add a new book
