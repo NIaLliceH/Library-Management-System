@@ -6,6 +6,7 @@ const AuthorBook = require('../models/AuthorBook');
 const borrowTicket = require('../models/BorrowTicket');
 const HoldTicket = require('../models/HoldTicket');
 const Student = require('../models/Student')
+const RateBook = require('../models/Ratebook')
 
 // Get all books
 router.get('/', async (req, res) => {
@@ -487,36 +488,44 @@ router.post('/', async (req, res) => {
   
 
 // rate book
+// rate book
 router.post('/:id/rate', async (req, res) => {
   try {
     const { rating, userID, borrowID } = req.body;
 
+    // Kiểm tra đánh giá hợp lệ
     if (![1, 2, 3, 4, 5].includes(rating)) {
-      return res.status(400).json({ message: 'Đánh giá không hợp lệ' });
+      return res.status(400).json({ message: 'Đánh giá không hợp lệ. Giá trị đánh giá phải từ 1 đến 5.' });
     }
 
+    // Tìm sách theo ID
     const book = await Book.findById(req.params.id);
     if (!book) {
-      return res.status(404).json({ message: 'Không tìm thấy sách đánh giá' });
+      return res.status(404).json({ message: 'Không tìm thấy sách để đánh giá.' });
     }
 
-    // Kiểm tra sinh viên đã đánh giá chưa
-    const existingRating = await RateBook.findOne({ ID_stu, ID_Boo: req.params.id });
+    // Kiểm tra nếu user đã đánh giá sách này
+    const existingRating = await RateBook.findOne({ ID_stu: userID, ID_Boo: req.params.id });
     if (existingRating) {
-      return res.status(400).json({ message: 'Sinh viên đã đánh giá sách này rồi' });
+      return res.status(400).json({ message: 'Sinh viên đã đánh giá sách này rồi.' });
     }
 
-    // Kiểm tra BorrowTicket tồn tại và cập nhật trạng thái rated
-    const borrowTicket = await BorrowTicket.findById(borrowID);
-    if (!borrowTicket) {
-      return res.status(404).json({ message: 'Không tìm thấy phiếu mượn' });
-    }
-    if (borrowTicket.rated === '1') {
-      return res.status(400).json({ message: 'Phiếu mượn này đã được đánh giá' });
+    // Kiểm tra BorrowTicket tồn tại
+    const borrowTic = await borrowTicket.findById(borrowID);
+    if (!borrowTic) {
+      return res.status(404).json({ message: 'Không tìm thấy phiếu mượn.' });
     }
 
-    borrowTicket.rated = '1'; // Chuyển trạng thái rated thành '1'
-    await borrowTicket.save();
+    // Kiểm tra trạng thái rated
+    if (borrowTic.rated === '1') {
+      return res.status(400).json({ message: 'Phiếu mượn này đã được đánh giá.' });
+    }
+
+    // Cập nhật trạng thái rated
+    borrowTic.rated = '1';
+    await borrowTic.save();
+
+    // Thêm đánh giá mới
     const newRate = new RateBook({
       ID_stu: userID,
       ID_Boo: req.params.id,
@@ -524,18 +533,47 @@ router.post('/:id/rate', async (req, res) => {
     });
     await newRate.save();
 
+    // Cập nhật thông tin đánh giá của sách
+    if (!book.Rate) {
+      book.Rate = { one: 0, two: 0, three: 0, four: 0, five: 0 };
+    }
     if (rating === 1) book.Rate.one += 1;
     else if (rating === 2) book.Rate.two += 1;
     else if (rating === 3) book.Rate.three += 1;
     else if (rating === 4) book.Rate.four += 1;
     else if (rating === 5) book.Rate.five += 1;
 
+    // Tính lại trung bình đánh giá
+    const totalRatings = 
+      book.Rate.one + 
+      book.Rate.two + 
+      book.Rate.three + 
+      book.Rate.four + 
+      book.Rate.five;
+
+    const totalScore = 
+      book.Rate.one * 1 + 
+      book.Rate.two * 2 + 
+      book.Rate.three * 3 + 
+      book.Rate.four * 4 + 
+      book.Rate.five * 5;
+
+    book.AvgRate = totalRatings > 0 ? (totalScore / totalRatings).toFixed(2) : 0;
     await book.save();
-    res.status(200).json({ message: 'Đánh giá thành công', AvgRate: book.AvgRate });
+
+    res.status(200).json({ 
+      message: 'Đánh giá thành công', 
+      AvgRate: book.AvgRate 
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Đánh giá thất bại', error });
+    console.error(error);
+    res.status(500).json({ 
+      message: 'Đánh giá thất bại', 
+      error: error.message 
+    });
   }
 });
+
 
 
 

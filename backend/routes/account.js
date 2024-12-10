@@ -113,12 +113,14 @@ router.post('/login', async (req, res) => {
     }
 
     // Lấy thông tin người dùng
+    let ban = "on";
     const stu = await Student.findOne({ ID: account._id });
-    if (!stu) {
-      return res.status(404).json({ message: 'Student không tồn tại' });
+    if (stu) {
+      ban = stu.NoWarning > 3 ? "banned" : "on";
     }
 
-    const ban = stu.NoWarning > 3 ? "banned" : "on";
+
+    // const ban = stu.NoWarning > 3 ? "banned" : "on";
 
 
     let data = {};
