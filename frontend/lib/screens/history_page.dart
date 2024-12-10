@@ -2,16 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:frontend/constants.dart';
 import 'package:frontend/screens/borrow_ticket_view.dart';
 import '../api_service.dart';
+import 'package:frontend/auth_service.dart';
 import '../utils.dart';
 
 class HistoryPage extends StatelessWidget {
-  final String userId;
-  const HistoryPage({super.key, required this.userId});
+  const HistoryPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         toolbarHeight: 60,
         backgroundColor: kBase2,
         title: Text(
@@ -23,7 +24,7 @@ class HistoryPage extends StatelessWidget {
         ),
       ),
       body: FutureBuilder(
-        future: ApiService.getBorrowTicketsOfUser(userId),
+        future: ApiService.getBorrowTicketsOfUser(thisUser!.id),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(
@@ -40,9 +41,8 @@ class HistoryPage extends StatelessWidget {
           } else {
             var tickets = snapshot.data!;
             tickets = Utils.sortBorrowTicketsByPriority(tickets);
-            // add you are borrowing no books message
             return Padding(
-              padding: EdgeInsets.only(right: 8, left: 8, top: 10),
+              padding: EdgeInsets.all(15),
               child: ListView(
                 children: [
                   // notice message
@@ -50,14 +50,15 @@ class HistoryPage extends StatelessWidget {
                     'You are borrowing ${tickets.where((ticket) => !ticket.returned).length} / $maxBorrowTicketAmt books',
                     style: TextStyle(
                       fontSize: 15,
-                      // fontWeight: FontWeight.w700,
-                      color: Colors.black,
+                      fontWeight: FontWeight.w700,
+                      color: purpleStatus,
                     ),
                   ),
                   ListView.builder(
-                    padding: EdgeInsets.only(top: 10),
+                    // padding: EdgeInsets.only(top: 10),
                     physics: BouncingScrollPhysics(),
-                    shrinkWrap: true, // because no wrapping Container to set height
+                    shrinkWrap:
+                        true, // because no wrapping Container to set height
                     itemCount: tickets.length,
                     itemBuilder: (context, index) {
                       return InkWell(
@@ -65,79 +66,85 @@ class HistoryPage extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => BorrowTicketView(userId: userId, ticket: tickets[index]),
+                              builder: (context) =>
+                                  BorrowTicketView(ticket: tickets[index]),
                             ),
                           );
                         },
                         child: Container(
-                          margin: EdgeInsets.symmetric(vertical: 5, horizontal: 5),
-                          padding: EdgeInsets.only(left: 5, top: 5, bottom: 5, right: 8),
+                          margin: EdgeInsets.only(top: 10),
+                          padding:
+                              EdgeInsets.symmetric(horizontal: 15, vertical: 5),
                           height: 100,
                           decoration: BoxDecoration(
-                            color: tickets[index].returned ? kBase0 : kBase2,
+                            color: tickets[index].returned ? kBase0 : kBase1,
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Row(
                             children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                                children: [
-                                  // title
-                                  Text(
-                                    Utils.processDisplayValue(tickets[index].bookTitle),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w700,
-                                        color: kBase3
+                              Expanded(
+                                child: Column(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    // title
+                                    Text(
+                                      Utils.processDisplayValue(
+                                          tickets[index].bookTitle),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w700,
+                                          color: kBase3),
                                     ),
-                                  ),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                              Utils.processDisplayValue(tickets[index].bookAuthor),
-                                              style: TextStyle(
-                                                  fontSize: 12,
-                                                  fontWeight: FontWeight.w300)
-                                          ),
-                                          Text(
-                                              Utils.processDisplayValue(tickets[index].bookCategory),
-                                              style: TextStyle(
-                                                  fontSize: 12,
-                                                  fontStyle: FontStyle.italic,
-                                                  fontWeight: FontWeight.w300,
-                                                  color: kBase3
-                                              )
-                                          ),
-                                        ],
-                                      ),
-                                      Align(
-                                        alignment: Alignment.centerRight,
-                                        child: Text(
-                                          tickets[index].returned ?
-                                            'Returned'
-                                            : tickets[index].dueDate.isBefore(DateTime.now()) ?
-                                              '${DateTime.now().difference(tickets[index].dueDate).inDays} day(s) overdue'
-                                              : '${tickets[index].dueDate.difference(DateTime.now()).inDays} day(s) left',
+                                    // author
+                                    Text(
+                                        Utils.processDisplayValue(
+                                            tickets[index].bookAuthor),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w300)),
+                                    // category and status
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                            Utils.processDisplayValue(
+                                                tickets[index].bookCategory),
+                                            style: TextStyle(
+                                                fontSize: 12,
+                                                fontStyle: FontStyle.italic,
+                                                fontWeight: FontWeight.w300,
+                                                color: kBase3)),
+                                        Text(
+                                          tickets[index].returned
+                                              ? 'Returned'
+                                              : tickets[index]
+                                                      .dueDate
+                                                      .isBefore(DateTime.now())
+                                                  ? '${DateTime.now().difference(tickets[index].dueDate).inDays} day(s) overdue'
+                                                  : '${tickets[index].dueDate.difference(DateTime.now()).inDays} day(s) left',
                                           style: TextStyle(
                                               fontSize: 13,
-                                              color: tickets[index].returned ?
-                                              purpleStatus
-                                              : tickets[index].dueDate.isBefore(DateTime.now()) ?
-                                                redStatus
-                                                : greenStatus,
+                                              color: tickets[index].returned
+                                                  ? purpleStatus
+                                                  : tickets[index]
+                                                          .dueDate
+                                                          .isBefore(
+                                                              DateTime.now())
+                                                      ? redStatus
+                                                      : greenStatus,
                                               fontStyle: FontStyle.italic),
-                                        ),
-                                      )
-                                    ],
-                                  )
-                                ],
+                                        )
+                                      ],
+                                    )
+                                  ],
+                                ),
                               ),
                             ],
                           ),

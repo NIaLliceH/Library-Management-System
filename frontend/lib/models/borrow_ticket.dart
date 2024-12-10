@@ -1,3 +1,5 @@
+import 'package:intl/intl.dart';
+
 class BorrowTicket {
   final String id;
   final String bookTitle;
@@ -32,23 +34,28 @@ class BorrowTicket {
 
   factory BorrowTicket.fromBasicJson(Map<String, dynamic> json) {
     return BorrowTicket(
-      id: json['_id'],
-      bookTitle: json['bookTitle'],
-      bookAuthor: List<String>.from(json['bookAuthor']),
-      bookCategory: json['bookCategory'] ?? 'N/A',
-      returned: json['status'],
+      id: json['borrowTicket_ID'] ?? 'N/A',
+      bookTitle: json['title'] ?? 'N/A',
+      bookAuthor: List<String>.from(json['author']).isEmpty ? ['N/A'] : List<String>.from(json['author']),
+      bookCategory: json['category'] ?? 'N/A',
+      returned: json['status'] == 'borrowing' ? false : true,
       createdDate: DateTime.parse(json['createdDate']),
-      dueDate: DateTime.parse(json['dueDate']),
+      dueDate: DateTime.parse(json['expiredDate']),
     );
   }
 
   void updateDetails(Map<String, dynamic> json) {
-    bookId = json['bookId'];
-    bookImageUrl = json['bookImageUrl'] ?? 'https://drive.google.com/uc?export=view&id=1oxjzdaMKjybjbwoduSXd9mGGJDPTcJD6'; // placeholder image
-    bookEdition = json['bookEdition'];
+    bookId = json['bookID'];
+    bookImageUrl = json['imageUrl'] ?? 'https://drive.google.com/uc?export=view&id=1oxjzdaMKjybjbwoduSXd9mGGJDPTcJD6'; // placeholder image
+    bookEdition = json['edition'] ?? 'N/A';
     if (returned) {
-      returnedDate = DateTime.parse(json['returnedDate']);
+      // returnedDate = DateTime.parse(json['returnedDate']);
+      // canceledDate = DateTime.parse(json['canceledDate']);
+      String dateStr = json['returnedDate'].toString();
+      DateFormat format = DateFormat("EEE MMM dd yyyy HH:mm:ss 'GMT'Z");
+      dateStr = dateStr.replaceAll(RegExp(r'\(.*?\)'), '').trim();
+      returnedDate = format.parse(dateStr);
     }
-    hasRated = json['hasRated'] ?? true;
+    hasRated = json['hasRated'].toString() == '1' ? true : false;
   }
 }

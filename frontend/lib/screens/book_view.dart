@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/api_service.dart';
-import 'package:frontend/screens/hold_form.dart';
 import 'package:frontend/utils.dart';
 import 'package:frontend/constants.dart';
-import 'package:frontend/models/book.dart';
+
+import '../auth_service.dart';
+import '../models/book.dart';
 
 class BookView extends StatelessWidget {
-  final Book? book;
+  // final Book? book;
   final String bookId;
-  const BookView({super.key, required this.bookId, this.book});
+  final String userId = thisUser!.id;
+  BookView({super.key, required this.bookId});
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +34,7 @@ class BookView extends StatelessWidget {
           ),
         ),
         body: FutureBuilder(
-          future: book != null ? ApiService.getBookDetails(book!) : ApiService.getBookById(bookId),
+          future: ApiService.getBookById(bookId, userId),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return Center(
@@ -50,12 +52,12 @@ class BookView extends StatelessWidget {
               );
             }
             else {
-              final book = snapshot.data!;
+              final Book book = snapshot.data!;
               final isButtonDisabled = !book.canHold!;
               return Stack(
                 children: [
                   SingleChildScrollView(
-                    padding: EdgeInsets.all(16),
+                    padding: EdgeInsets.all(20),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -64,7 +66,7 @@ class BookView extends StatelessWidget {
                           child: Image.network(
                             book.imageUrl,
                             fit: BoxFit.cover,
-                            height: 300,
+                            height: 250,
                           ),
                         ),
                         // book info
@@ -75,26 +77,104 @@ class BookView extends StatelessWidget {
                         Utils.displayInfo('Available', '${book.availableCopies} / ${book.noOfCopies} copies'),
                         Utils.displayInfo('No of Pages', book.noOfPages.toString()),
                         Utils.displayInfo('Rating', '${book.rating} / 5'),
-                        Utils.displayInfo('Description', book.description),
+                        Padding(
+                          padding: EdgeInsets.only(top: 10, bottom: 80),
+                          child: Column(
+                            // mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Description:',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Text(
+                                '${book.description}',
+                                textAlign: TextAlign.justify,
+                              )
+                            ],
+                          ),
+                        ),
                       ],
                     ),
                   ),
-                  Align(
+                  Container(
+                    margin: EdgeInsets.only(bottom: 20),
                     alignment: Alignment.bottomCenter,
                     child: FloatingActionButton.extended(
-                      label: Text('Hold this book'),
-                      backgroundColor: isButtonDisabled ? Colors.grey : kBase3,
+                      label: Text('Hold this book', style: TextStyle(color: Colors.white)),
+                      backgroundColor: isButtonDisabled ? Colors.grey : holdButton,
                       onPressed: isButtonDisabled ?
                       null
                       : () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => HoldForm(book: book),
-                          ),
+                        showDialog(
+                          context: context,
+                          builder: (context) {
+                            final DateTime now = DateTime.now();
+                            final DateTime deadline = now.add(Duration(days: maxHoldTicketDays));
+
+                            return AlertDialog(
+                              backgroundColor: popUp,
+                              title: Text('Hold Ticket', style: TextStyle(color: kBase3), textAlign: TextAlign.center),
+                              content: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Utils.displayInfo("Title", book.title),
+                                  Utils.displayInfo("Author", book.author),
+                                  Utils.displayInfo("Edition", book.edition),
+                                  Utils.displayInfo("Start holding date", now),
+                                  Utils.displayInfo("Due date", deadline),
+                                  Text("You must come to the library to borrow "
+                                      "this book before the due date, otherwise "
+                                      "your hold ticket will be canceled.", style: TextStyle(color: Colors.red)),
+                                ],
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                  },
+                                  child: Text('Cancel', style: TextStyle(color: Colors.black)),
+                                ),
+                                ElevatedButton(
+                                  // set the button color to confirmButton
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: confirmButton,
+                                  ),
+                                  onPressed: () async {
+                                    try {
+                                      final message = await ApiService.createHoldTicket(userId, bookId);
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: Text(message),
+                                            backgroundColor: greenStatus,
+                                          ),
+                                        );
+                                        Navigator.pop(context); // close dialog
+                                        Navigator.pop(context); // return to previous screen
+                                      }
+                                    }
+                                    catch (e) {
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: Text('Error: $e'),
+                                            backgroundColor: redStatus,
+                                          ),
+                                        );
+                                      }
+                                    }
+                                  },
+                                  child: Text('Confirm', style: TextStyle(color: Colors.white)),
+                                )
+                              ],
+                            );
+                          }
                         );
                       },
-
                     ),
                   )
                 ],

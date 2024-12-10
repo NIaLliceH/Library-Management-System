@@ -6,15 +6,20 @@ import 'package:frontend/screens/login_page.dart';
 import 'package:frontend/screens/profile_page.dart';
 import 'package:frontend/screens/tickets_page.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'auth_service.dart';
 
-import 'models/user.dart';
-
-void main() {
-  runApp(MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await initGlobals();
+  print(thisUser != null ? 'Logged in as ${thisUser!.name}' : 'Not logged in');
+  runApp(MyApp(isLoggedIn: thisUser != null));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final bool isLoggedIn;
+
+  const MyApp({super.key, required this.isLoggedIn});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -23,20 +28,44 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         fontFamily: GoogleFonts.openSans().fontFamily,
       ),
-      home: LoginPage(),
+      initialRoute: isLoggedIn ? '/' : '/login',
+      routes: {
+        '/': (context) => MainPage(),
+        '/login': (context) => LoginPage(),
+      },
     );
   }
 }
 
-class MainPage extends StatefulWidget {
-  final User user;
-  const MainPage({super.key, required this.user});
+class MainPage extends StatelessWidget {
+  const MainPage({super.key});
 
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<void>(
+      future: initGlobals(), // Make sure to call initGlobals here
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        } else if (thisUser == null) {
+          return Center(child: Text('User not logged in')); // handle error when using thisUser
+        } else {
+          // Return the main content if user is initialized
+          return _MainPageContent();
+        }
+      },
+    );
+  }
+}
+
+class _MainPageContent extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => _MainPageState();
 }
 
-class _MainPageState extends State<MainPage> {
+class _MainPageState extends State<_MainPageContent> {
   int _selectedIndex = 0;
 
   late final List<Widget> _pages;
@@ -45,10 +74,10 @@ class _MainPageState extends State<MainPage> {
   void initState() {
     super.initState();
     _pages = <Widget>[
-      HomePage(userName: widget.user.name),
-      TicketsPage(userId: widget.user.id),
-      HistoryPage(userId: widget.user.id),
-      ProfilePage(user: widget.user),
+      HomePage(),
+      TicketsPage(),
+      HistoryPage(),
+      ProfilePage(),
     ];
   }
 
@@ -93,7 +122,6 @@ class _MainPageState extends State<MainPage> {
           unselectedItemColor: kBase2,
           backgroundColor: kBase3,
           onTap: _onItemTapped,
-
         ),
       ),
     );

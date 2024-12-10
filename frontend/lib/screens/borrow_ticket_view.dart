@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/auth_service.dart';
 import 'package:frontend/models/borrow_ticket.dart';
 import 'package:frontend/screens/book_view.dart';
-import 'package:frontend/screens/rate_form.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import '../api_service.dart';
 import '../constants.dart';
 import '../utils.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
 class BorrowTicketView extends StatelessWidget {
   final BorrowTicket ticket;
-  final String userId;
-  const BorrowTicketView({super.key, required this.ticket, required this.userId});
+  final String userId = thisUser!.id;
+  BorrowTicketView({super.key, required this.ticket});
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +20,7 @@ class BorrowTicketView extends StatelessWidget {
         toolbarHeight: 60,
         backgroundColor: kBase2,
         title: Text(
-          'Hold Ticket View',
+          'Borrow Ticket View',
           style: TextStyle(
             fontSize: 20,
             color: kBase4,
@@ -83,41 +85,52 @@ class BorrowTicketView extends StatelessWidget {
                       ],
                     ),
                   ),
-                  Align(
+                  Container(
+                    margin: EdgeInsets.only(bottom: 20),
                     alignment: Alignment.bottomCenter,
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         // rate book button
                         FloatingActionButton.extended(
                           onPressed: disableRateButton ?
                           null
-                              : () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => RateForm(userId: userId, ticket: ticket),
-                              ),
-                            );
-                          },
-                          label: Text('Rate Book'),
+                              : () => _showRateDialog(context, ticket),
+                          label: Text('Rate Book', style: TextStyle(
+                            color: Colors.white,
+                          )),
                           backgroundColor: disableRateButton ?
                           Colors.grey
                               : greenStatus,
                         ),
-                        // view book button
-                        FloatingActionButton.extended(
-                          label: Text('View Book'),
-                          backgroundColor: kBase3,
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => BookView(bookId: ticket.bookId!),
+                        if (!ticket.returned)
+                        // return button
+                          FloatingActionButton.extended(
+                            label: Text(
+                              'Return Book',
+                              style: TextStyle(
+                                color: Colors.white,
                               ),
-                            );
-                          },
-                        ),
+                            ),
+                            backgroundColor: kBase3,
+                            onPressed: () => _showReturnDialog(context, ticket.id),
+                          )
+                        else
+                        // view book button
+                          FloatingActionButton.extended(
+                            label: Text('View Book', style: TextStyle(
+                              color: Colors.white,
+                            )),
+                            backgroundColor: kBase3,
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => BookView(bookId: ticket.bookId!),
+                                ),
+                              );
+                            },
+                          ),
                       ],
                     ),
                   )
@@ -126,6 +139,103 @@ class BorrowTicketView extends StatelessWidget {
             }
           }
       ),
+    );
+  }
+
+  void _showRateDialog(BuildContext context, BorrowTicket ticket) {
+    int rating = 0;
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text('Rate Book'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Utils.displayInfo('Title', ticket.bookTitle),
+                Utils.displayInfo('Author', ticket.bookAuthor),
+                Utils.displayInfo('Edition', ticket.bookEdition),
+                Text('Rate this book:'),
+                RatingBar.builder(
+                  initialRating: 0,
+                  minRating: 1,
+                  maxRating: 5,
+                  itemBuilder: (context, index) => Icon(
+                    Icons.star,
+                    color: Colors.amber,
+                  ),
+                  onRatingUpdate: (value) {
+                    rating = value.toInt();
+                  },
+                )
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  try {
+                    final message = await ApiService.rateBook(ticket.bookId!, userId, rating, ticket.id);
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(message),
+                          backgroundColor: greenStatus,
+                        ),
+                      );
+                      Navigator.pop(context);
+                    }
+                  }
+                  catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Error: $e'),
+                          backgroundColor: redStatus,
+                        ),
+                      );
+                    }
+                  }
+                },
+                child: Text('Submit'),
+              )
+            ],
+          );
+        }
+    );
+  }
+
+  void _showReturnDialog(BuildContext context, String ticketId) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Return QR'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min, // Adjust to fit content only
+            children: [
+              SizedBox(
+                width: 200,
+                height: 200,
+                child: QrImageView(
+                  data: ticketId,
+                  version: QrVersions.auto,
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('Close'),
+            ),
+          ],
+        );
+      },
     );
   }
 }

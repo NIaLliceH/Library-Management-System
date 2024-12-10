@@ -34,24 +34,29 @@ class Book {
   });
 
   factory Book.fromBasicJson(Map<String, dynamic> json) {
+    String url = 'https://drive.google.com/uc?export=view&id=1oxjzdaMKjybjbwoduSXd9mGGJDPTcJD6'; // placeholder image
+    if (json['imageUrl'] != null && json['imageUrl'].toString().trim() != '') {
+      url = json['imageUrl'];
+    }
+
     return Book(
-      id: json['_id'],
-      title: json['name'],
-      author: json['Author'] ?? 'N/A',
-      category: json['Category'] ?? 'N/A',
-      imageUrl: json['imageUrl'] ?? 'https://drive.google.com/uc?export=view&id=1oxjzdaMKjybjbwoduSXd9mGGJDPTcJD6', // placeholder image
-      availableCopies: int.parse(json['NoValidCopies'] ?? '-1'),
+      id: json['bookId'],
+      title: json['name'] ?? 'N/A',
+      author: List<String>.from(json['authors']).isEmpty ? ['N/A'] : List<String>.from(json['authors']),
+      category: json['category'] ?? 'N/A',
+      imageUrl: url,
+      availableCopies: json['noAvaiCopies'] ?? 0,
     );
   }
 
   void updateDetails(Map<String, dynamic> json) {
-    noOfCopies = int.parse(json['NoOfCopies'] ?? '-1');
-    noOfPages = int.parse(json['NoOfPages'] ?? '-1');
-    rating = double.parse(json['Rating'] ?? '-1');
-    publisher = json['Publisher'] ?? 'N/A';
-    edition = json['Edition'] ?? 'N/A';
-    publishDate = json['PublishDate'] ?? 'N/A';
-    description = json['Description'] ?? 'N/A';
-    canHold = json['canHold'] ?? false;
+    noOfCopies = json['noCopies'] ?? -1;
+    noOfPages = json['noPages'] ?? -1;
+    rating = double.parse(json['avgRating'] ?? '-1');
+    publisher = json['publisher'] ?? 'N/A';
+    edition = json['edition'] ?? 'N/A';
+    publishDate = json['publishDate'] == null ? 'N/A' : json['publishDate'].toString().substring(0, 10);
+    description = json['description'] ?? 'N/A';
+    canHold = json['canHold'] == 1 ? true : false;
   }
 }

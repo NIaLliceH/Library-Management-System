@@ -1,58 +1,205 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/api_service.dart';
+import 'package:frontend/auth_service.dart';
+import 'package:frontend/constants.dart';
+import '../models/user.dart';
 
-import '../main.dart';
 
-// Thai Hoa, do it :)
-// này tui viết tạm để test api, ông thay lại bằng layout của ông nhé
-// miễn sao gọi MainPage(user: user) để truyền data của user từ api cho MainPage là đc
-class LoginPage extends StatelessWidget {
-  LoginPage({super.key});
+class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
 
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
 
-  Future<void> _attemptLogin(BuildContext context) async {
-    try {
-      final user = await ApiService.loginStudent(_emailController.text, _passwordController.text);
+class _LoginPageState extends State<LoginPage> {
+  // String _email = 'linh@student.com'; // testing
+  // String _password = 'password123';
 
-      if (context.mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => MainPage(user: user)),
-        );
-      }
-    } catch(e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
-        );
-      }
-    }
+  String _email = '';
+  String _password = '';
+  bool _obscuredText = true;
+
+  void _togglePasswordVisibility() {
+    setState(() {
+      _obscuredText = !_obscuredText;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Login")),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: _emailController,
-              decoration: InputDecoration(labelText: "Email"),
+      body: SingleChildScrollView(
+        child: Container(
+          padding: EdgeInsets.all(30),
+          height: MediaQuery.of(context).size.height,
+          decoration: BoxDecoration(
+            image: DecorationImage(
+                image: AssetImage('assets/images/background2.jpg'),
+                fit: BoxFit.cover,
             ),
-            TextField(
-              controller: _passwordController,
-              decoration: InputDecoration(labelText: "Password"),
-              obscureText: true,
-            ),
-            ElevatedButton(
-              onPressed: () => _attemptLogin(context),
-              child: const Text("Login"),
-            ),
-          ],
+          ),
+          child: Column(
+            children: [
+              // app name and logo
+              Padding(
+                padding: const EdgeInsets.only(top: 100.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // app name
+                    Text(
+                      'BKLIB',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 60,
+                        color: Colors.white,
+                      ),
+                    ),
+                    // app logo
+                    Container(
+                      height: 90,
+                      width: 100,
+                      decoration: BoxDecoration(
+                        image: DecorationImage(
+                            image: AssetImage('assets/images/logo.png'),
+                            fit: BoxFit.fill),
+                      ),
+                    )
+                  ],
+                ),
+              ),
+              // welcome message
+              Container(
+                padding: const EdgeInsets.only(top: 150.0),
+                alignment: Alignment.topLeft,
+                child: Text(
+                  'Welcome back!',
+                  style: TextStyle(
+                    fontSize: 25,
+                    color: kBase4,
+                  ),
+                ),
+              ),
+              // login form
+              Container(
+                margin: EdgeInsets.symmetric(vertical: 20),
+                decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(15),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2),
+                        blurRadius: 14.0,
+                        offset: Offset(0, 9),
+                      )
+                    ]),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // username input
+                    Container(
+                      padding: EdgeInsets.all(8.0),
+                      decoration: BoxDecoration(
+                          border: Border(
+                              bottom: BorderSide(
+                                  color: Colors.black.withOpacity(0.2),
+                              )
+                          )
+                      ),
+                      child: TextFormField(
+                        decoration: const InputDecoration(
+                          border: InputBorder.none,
+                          hintText: 'email',
+                          hintStyle: TextStyle(
+                              color: Color.fromARGB(255, 201, 201, 201),
+                          ),
+                          prefixIcon: Icon(Icons.person),
+                        ),
+                        onChanged: (value) {
+                          setState(() {
+                            _email = value;
+                          });
+                        },
+                      ),
+                    ),
+                    // password input
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: TextFormField(
+                        obscureText: _obscuredText,
+                        decoration: InputDecoration(
+                          border: InputBorder.none,
+                          hintStyle: TextStyle(
+                              color: Color.fromARGB(255, 201, 201, 201)
+                          ),
+                          hintText: 'password',
+                          prefixIcon: Icon(Icons.lock),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscuredText
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                            ),
+                            onPressed: _togglePasswordVisibility,
+                          ),
+                        ),
+                        onChanged: (value) {
+                          setState(() {
+                            _password = value;
+                          });
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // submit button -> call loginStudent()
+              TextButton(
+                  style: TextButton.styleFrom(
+                    backgroundColor: loginButton,
+                    minimumSize: Size(200, 50),
+                  ),
+                  onPressed: () async {
+                    try {
+                      User user = await ApiService.loginStudent(_email, _password);
+                      await AuthService.saveLoginState(user);
+                      if (context.mounted) {
+                        Navigator.pushReplacementNamed(context, '/');
+                      }
+                    } catch (e) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar( // !!! AlertDialog
+                            content: Text(e.toString()),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
+                    }
+                  },
+                  child: Text(
+                    'Login',
+                    style: TextStyle(
+                      fontSize: 20,
+                      color: Colors.white
+                    ),
+                  )),
+              // forget password
+              TextButton(
+                child: Text(
+                  'Forget password?',
+                  style: TextStyle(
+                    color: placeholderText,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+                onPressed: () {
+                  print('Forget password pressed');
+                },
+              )
+            ],
+          ),
         ),
       ),
     );

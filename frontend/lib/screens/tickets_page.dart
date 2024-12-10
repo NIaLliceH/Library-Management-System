@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:frontend/constants.dart';
 import 'package:frontend/models/hold_ticket.dart';
 import '../api_service.dart';
+import 'package:frontend/auth_service.dart';
 import '../utils.dart';
 import 'hold_ticket_view.dart';
 
 class TicketsPage extends StatefulWidget {
-  final String userId;
-  const TicketsPage({super.key, required this.userId});
+  final String userId = thisUser!.id;
+  TicketsPage({super.key});
 
   @override
   State<StatefulWidget> createState() => _TicketsPageState();
@@ -32,6 +33,7 @@ class _TicketsPageState extends State<TicketsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         toolbarHeight: 60,
         backgroundColor: kBase2,
         title: Text(
@@ -43,7 +45,7 @@ class _TicketsPageState extends State<TicketsPage> {
         ),
       ),
       body: FutureBuilder(
-        future: ApiService.getHoldTicketsOfUser(widget.userId),
+        future: ticketsFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(
@@ -60,22 +62,20 @@ class _TicketsPageState extends State<TicketsPage> {
           } else {
             var tickets = snapshot.data!;
             tickets = Utils.sortHoldTicketsByPriority(tickets);
-            // add you are borrowing no books message
             return Padding(
-              padding: EdgeInsets.only(right: 8, left: 8, top: 10),
+              padding: EdgeInsets.all(15),
               child: ListView(
                 children: [
-                  // notice message
+                  // notice message for holding books (not canceled and not expired)
                   Text(
-                    'You are holding ${tickets.where((ticket) => !ticket.canceled).length} / $maxHoldTicketAmt books',
+                    'You are holding ${tickets.where((ticket) => !ticket.canceled && ticket.dueDate.isAfter(DateTime.now())).length} / $maxHoldTicketAmt books',
                     style: TextStyle(
                       fontSize: 15,
-                      // fontWeight: FontWeight.w700,
-                      color: Colors.black,
+                      fontWeight: FontWeight.w700,
+                      color: purpleStatus,
                     ),
                   ),
                   ListView.builder(
-                    padding: EdgeInsets.only(top: 10),
                     physics: BouncingScrollPhysics(),
                     shrinkWrap: true, // because no wrapping Container to set height
                     itemCount: tickets.length,
@@ -89,61 +89,60 @@ class _TicketsPageState extends State<TicketsPage> {
                             ),
                           );
 
+                          // need to refresh the list if the ticket is canceled
                           if (result == true) {
                             _refreshTickets(); // refresh the list on return
                           }
                         },
                         child: Container(
-                          margin: EdgeInsets.symmetric(vertical: 5, horizontal: 5),
-                          padding: EdgeInsets.only(left: 5, top: 5, bottom: 5, right: 8),
+                          margin: EdgeInsets.only(top: 10),
+                          padding: EdgeInsets.symmetric(horizontal: 15, vertical: 5),
                           height: 100,
                           decoration: BoxDecoration(
-                            color: tickets[index].canceled ? kBase0 : kBase2,
+                            color: tickets[index].canceled ? kBase0 : kBase1,
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Row(
                             children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                                children: [
-                                  // title
-                                  Text(
-                                    Utils.processDisplayValue(tickets[index].bookTitle),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w700,
-                                        color: kBase3
-                                    ),
-                                  ),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                              Utils.processDisplayValue(tickets[index].bookAuthor),
-                                              style: TextStyle(
-                                                  fontSize: 12,
-                                                  fontWeight: FontWeight.w300)
-                                          ),
-                                          Text(
-                                              Utils.processDisplayValue(tickets[index].bookCategory),
-                                              style: TextStyle(
-                                                  fontSize: 12,
-                                                  fontStyle: FontStyle.italic,
-                                                  fontWeight: FontWeight.w300,
-                                                  color: kBase3
-                                              )
-                                          ),
-                                        ],
+                              Expanded(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    // title
+                                    Text(
+                                      Utils.processDisplayValue(tickets[index].bookTitle),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w700,
+                                          color: kBase3
                                       ),
-                                      Align(
-                                        alignment: Alignment.centerRight,
-                                        child: Text(
+                                    ),
+                                    // author
+                                    Text(
+                                        Utils.processDisplayValue(tickets[index].bookAuthor),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w300)
+                                    ),
+                                    // category
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                            Utils.processDisplayValue(tickets[index].bookCategory),
+                                            style: TextStyle(
+                                                fontSize: 12,
+                                                fontStyle: FontStyle.italic,
+                                                fontWeight: FontWeight.w300,
+                                                color: kBase3
+                                            )
+                                        ),
+                                        Text(
                                           tickets[index].canceled ?
                                           'canceled'
                                               : tickets[index].dueDate.isBefore(DateTime.now()) ?
@@ -157,11 +156,12 @@ class _TicketsPageState extends State<TicketsPage> {
                                               purpleStatus
                                                   : greenStatus,
                                               fontStyle: FontStyle.italic),
-                                        ),
-                                      )
-                                    ],
-                                  )
-                                ],
+                                        )
+                                      ],
+                                    ),
+                                
+                                  ],
+                                ),
                               ),
                             ],
                           ),

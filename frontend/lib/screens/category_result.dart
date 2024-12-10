@@ -89,8 +89,8 @@ class CategoryResult extends StatelessWidget {
                         Expanded(
                           flex: 4,
                           child: Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
                             children: [
                               // title
                               Text(
@@ -103,43 +103,37 @@ class CategoryResult extends StatelessWidget {
                                     color: kBase3
                                 ),
                               ),
+                              // author
+                              Text(
+                                  Utils.processDisplayValue(books[index].author),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w300)
+                              ),
+                              // category
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  // author and category
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                          Utils.processDisplayValue(books[index].author),
-                                          style: TextStyle(
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w300)
-                                      ),
-                                      Text(
-                                          Utils.processDisplayValue(books[index].category),
-                                          style: TextStyle(
-                                              fontSize: 12,
-                                              fontStyle: FontStyle.italic,
-                                              fontWeight: FontWeight.w300,
-                                              color: kBase3
-                                          )
-                                      ),
-                                    ],
-                                  ),
-                                  // available copies
-                                  Align(
-                                    alignment: Alignment.centerRight,
-                                    child: Text(
-                                      '${books[index].availableCopies} available',
+                                  Text(
+                                      Utils.processDisplayValue(books[index].category),
                                       style: TextStyle(
-                                          fontSize: 13,
-                                          color: books[index].availableCopies > 0 ? greenStatus : redStatus,
-                                          fontStyle: FontStyle.italic),
-                                    ),
-                                  )
+                                          fontSize: 12,
+                                          fontStyle: FontStyle.italic,
+                                          fontWeight: FontWeight.w300,
+                                          color: kBase3
+                                      )
+                                  ),
+                                  Text(
+                                    '${books[index].availableCopies} available',
+                                    style: TextStyle(
+                                        fontSize: 13,
+                                        color: books[index].availableCopies > 0 ? greenStatus : redStatus,
+                                        fontStyle: FontStyle.italic),
+                                  ),
                                 ],
-                              )
+                              ),
                             ],
                           ),
                         ),
