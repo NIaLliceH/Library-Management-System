@@ -1,3 +1,5 @@
+import 'package:intl/intl.dart';
+
 class HoldTicket {
   final String id;
   final String bookTitle;
@@ -11,6 +13,7 @@ class HoldTicket {
   String? bookImageUrl;
   String? bookEdition;
   DateTime? canceledDate;
+  // String? canceledDate;
 
   HoldTicket({
     required this.id,
@@ -44,7 +47,11 @@ class HoldTicket {
     bookImageUrl = json['imageUrl'] ?? 'https://drive.google.com/uc?export=view&id=1oxjzdaMKjybjbwoduSXd9mGGJDPTcJD6'; // placeholder image
     bookEdition = json['edition'];
     if (canceled) {
-      canceledDate = DateTime.parse(json['canceledDate']);
+      // canceledDate = DateTime.parse(json['canceledDate']);
+      String dateStr = json['canceledDate'].toString();
+      DateFormat format = DateFormat("EEE MMM dd yyyy HH:mm:ss 'GMT'Z");
+      dateStr = dateStr.replaceAll(RegExp(r'\(.*?\)'), '').trim();
+      canceledDate = format.parse(dateStr);
     }
   }
 }

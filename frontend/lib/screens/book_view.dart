@@ -57,7 +57,7 @@ class BookView extends StatelessWidget {
               return Stack(
                 children: [
                   SingleChildScrollView(
-                    padding: EdgeInsets.all(16),
+                    padding: EdgeInsets.all(20),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -77,7 +77,25 @@ class BookView extends StatelessWidget {
                         Utils.displayInfo('Available', '${book.availableCopies} / ${book.noOfCopies} copies'),
                         Utils.displayInfo('No of Pages', book.noOfPages.toString()),
                         Utils.displayInfo('Rating', '${book.rating} / 5'),
-                        Utils.displayInfo('Description', book.description),
+                        Padding(
+                          padding: EdgeInsets.only(top: 10, bottom: 80),
+                          child: Column(
+                            // mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Description:',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Text(
+                                '${book.description}',
+                                textAlign: TextAlign.justify,
+                              )
+                            ],
+                          ),
+                        ),
                       ],
                     ),
                   ),

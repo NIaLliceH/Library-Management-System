@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/globals.dart';
 import 'package:frontend/models/borrow_ticket.dart';
+import 'package:intl/intl.dart';
 
 import 'models/book.dart';
 import 'models/hold_ticket.dart';
@@ -11,15 +12,12 @@ class Utils {
     if (value is List<String>) {
       return value.join(', ');
     } else if (value is DateTime) {
+      return DateFormat('yyyy-MM-dd HH:mm:ss').format(value);
       // return value.toIso8601String().substring(0, 10); // format???
-      return "${value.day.toString().padLeft(2, '0')}-${value.month.toString().padLeft(2, '0')}-${value.year}";
+      // return "${value.day.toString().padLeft(2, '0')}-${value.month.toString().padLeft(2, '0')}-${value.year}";
     } else {
       return value.toString();
     }
-  }
-
-  static String formatDate(DateTime value) {
-    return "${value.day.toString().padLeft(2, '0')}-${value.month.toString().padLeft(2, '0')}-${value.year}";
   }
 
   static Widget displayInfo(String label, dynamic value) {

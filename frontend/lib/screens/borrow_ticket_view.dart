@@ -19,7 +19,7 @@ class BorrowTicketView extends StatelessWidget {
         toolbarHeight: 60,
         backgroundColor: kBase2,
         title: Text(
-          'Hold Ticket View',
+          'Borrow Ticket View',
           style: TextStyle(
             fontSize: 20,
             color: kBase4,
@@ -84,24 +84,29 @@ class BorrowTicketView extends StatelessWidget {
                       ],
                     ),
                   ),
-                  Align(
+                  Container(
+                    margin: EdgeInsets.only(bottom: 20),
                     alignment: Alignment.bottomCenter,
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         // rate book button
                         FloatingActionButton.extended(
                           onPressed: disableRateButton ?
                           null
                               : () => _showRateDialog(context, ticket),
-                          label: Text('Rate Book'),
+                          label: Text('Rate Book', style: TextStyle(
+                            color: Colors.white,
+                          )),
                           backgroundColor: disableRateButton ?
                           Colors.grey
                               : greenStatus,
                         ),
                         // view book button
                         FloatingActionButton.extended(
-                          label: Text('View Book'),
+                          label: Text('View Book', style: TextStyle(
+                            color: Colors.white,
+                          )),
                           backgroundColor: kBase3,
                           onPressed: () {
                             Navigator.push(

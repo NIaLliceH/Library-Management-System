@@ -81,18 +81,24 @@ class ApiService {
 
   static Future<List<Book>> getBooksFiltered(BookFilter filter) async {
     String filterString;
+    String api = '';
     switch (filter) {
       case BookFilter.newRelease:
         filterString = 'newest';
+        api = '$baseUrl/books/$filterString';
         break;
       case BookFilter.topRated:
         filterString = 'top-rated';
+        api = '$baseUrl/books/$filterString';
         break;
       case BookFilter.mostBorrowed:
         filterString = 'most-borrowed';
+        api = '$baseUrl/$filterString';
         break;
     }
-    final response = await http.get(Uri.parse('$baseUrl/books/$filterString'));
+    // final response = await http.get(Uri.parse('$baseUrl/books/$filterString'));
+    final response = await http.get(Uri.parse(api));
+
     if (response.statusCode == 200) {
       List<dynamic> data = jsonDecode(response.body)['data'];
       List<Book> books = data.map<Book>((dynamic item) => Book.fromBasicJson(item)).toList();
@@ -147,7 +153,7 @@ class ApiService {
   }
 
   static Future<List<BorrowTicket>> getBorrowTicketsOfUser(String userId) async {
-    final response = await http.get(Uri.parse('$baseUrl/ticket/$userId/borrow'));
+    final response = await http.get(Uri.parse('$baseUrl/$userId/borrow'));
     if (response.statusCode == 200) {
       List<dynamic> body = jsonDecode(response.body);
       List<BorrowTicket> tickets = body.map((dynamic item) => BorrowTicket.fromBasicJson(item)).toList();
@@ -224,6 +230,8 @@ class ApiService {
       throw 'Hold ticket exists'; // this should not happen
     } else if (response.statusCode == 201) {
       return 'Hold ticket created successfully';
+    } else if (response.statusCode == 400) {
+      throw 'Reached limit of $maxHoldTicketAmt hold tickets';
     } else {
       throw 'Failed to create hold ticket';
     }
@@ -232,12 +240,12 @@ class ApiService {
   // not implemented yet
   static Future<void> cancelHoldTicket(String userId, String ticketId) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/ticket/$ticketId/cancel'),
+      Uri.parse('$baseUrl/cancel/$ticketId'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
       body: jsonEncode(<String, String>{
-        'user_id': userId,
+        'ID_user': userId,
       }),
     );
 

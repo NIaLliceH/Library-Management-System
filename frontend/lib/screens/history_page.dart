@@ -43,7 +43,7 @@ class HistoryPage extends StatelessWidget {
             var tickets = snapshot.data!;
             tickets = Utils.sortBorrowTicketsByPriority(tickets);
             return Padding(
-              padding: EdgeInsets.only(right: 8, left: 8, top: 10),
+              padding: EdgeInsets.all(15),
               child: ListView(
                 children: [
                   // notice message
@@ -51,12 +51,12 @@ class HistoryPage extends StatelessWidget {
                     'You are borrowing ${tickets.where((ticket) => !ticket.returned).length} / $maxBorrowTicketAmt books',
                     style: TextStyle(
                       fontSize: 15,
-                      // fontWeight: FontWeight.w700,
-                      color: Colors.black,
+                      fontWeight: FontWeight.w700,
+                      color: purpleStatus,
                     ),
                   ),
                   ListView.builder(
-                    padding: EdgeInsets.only(top: 10),
+                    // padding: EdgeInsets.only(top: 10),
                     physics: BouncingScrollPhysics(),
                     shrinkWrap: true, // because no wrapping Container to set height
                     itemCount: tickets.length,
@@ -71,56 +71,54 @@ class HistoryPage extends StatelessWidget {
                           );
                         },
                         child: Container(
-                          margin: EdgeInsets.symmetric(vertical: 5, horizontal: 5),
-                          padding: EdgeInsets.only(left: 5, top: 5, bottom: 5, right: 8),
+                          margin: EdgeInsets.only(top: 10),
+                          padding: EdgeInsets.symmetric(horizontal: 15, vertical: 5),
                           height: 100,
                           decoration: BoxDecoration(
-                            color: tickets[index].returned ? kBase0 : kBase2,
+                            color: tickets[index].returned ? kBase0 : kBase1,
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Row(
                             children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                                children: [
-                                  // title
-                                  Text(
-                                    Utils.processDisplayValue(tickets[index].bookTitle),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w700,
-                                        color: kBase3
-                                    ),
-                                  ),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                              Utils.processDisplayValue(tickets[index].bookAuthor),
-                                              style: TextStyle(
-                                                  fontSize: 12,
-                                                  fontWeight: FontWeight.w300)
-                                          ),
-                                          Text(
-                                              Utils.processDisplayValue(tickets[index].bookCategory),
-                                              style: TextStyle(
-                                                  fontSize: 12,
-                                                  fontStyle: FontStyle.italic,
-                                                  fontWeight: FontWeight.w300,
-                                                  color: kBase3
-                                              )
-                                          ),
-                                        ],
+                              Expanded(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    // title
+                                    Text(
+                                      Utils.processDisplayValue(tickets[index].bookTitle),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w700,
+                                          color: kBase3
                                       ),
-                                      Align(
-                                        alignment: Alignment.centerRight,
-                                        child: Text(
+                                    ),
+                                    // author
+                                    Text(
+                                        Utils.processDisplayValue(tickets[index].bookAuthor),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w300)
+                                    ),
+                                    // category and status
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                            Utils.processDisplayValue(tickets[index].bookCategory),
+                                            style: TextStyle(
+                                                fontSize: 12,
+                                                fontStyle: FontStyle.italic,
+                                                fontWeight: FontWeight.w300,
+                                                color: kBase3
+                                            )
+                                        ),
+                                        Text(
                                           tickets[index].returned ?
                                             'Returned'
                                             : tickets[index].dueDate.isBefore(DateTime.now()) ?
@@ -134,11 +132,11 @@ class HistoryPage extends StatelessWidget {
                                                 redStatus
                                                 : greenStatus,
                                               fontStyle: FontStyle.italic),
-                                        ),
-                                      )
-                                    ],
-                                  )
-                                ],
+                                        )
+                                      ],
+                                    )
+                                  ],
+                                ),
                               ),
                             ],
                           ),

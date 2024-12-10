@@ -67,7 +67,7 @@ class ProfilePage extends StatelessWidget {
               Divider(),
               Utils.displayInfo('Address', student.address),
               Divider(),
-              Utils.displayInfo('Join date', student.joinDate),
+              Utils.displayInfo('Joined on', student.joinDate),
               Divider(),
               Utils.displayInfo('Faculty', student.faculty),
               Divider(),

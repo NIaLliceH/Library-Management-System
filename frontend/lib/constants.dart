@@ -41,5 +41,5 @@ enum BookFilter {
 
 const maxBorrowTicketAmt = 5;
 const maxHoldTicketAmt = 5;
-const maxHoldTicketDays = 3;
+const maxHoldTicketDays = 7;
 const maxBorrowTicketDays = 14;

@@ -82,7 +82,8 @@ class HoldTicketView extends StatelessWidget {
                       ],
                     ),
                   ),
-                  Align(
+                  Container(
+                    margin: EdgeInsets.only(bottom: 20),
                     alignment: Alignment.bottomCenter,
                     child: FloatingActionButton.extended(
                       onPressed: isButtonDisabled ?
