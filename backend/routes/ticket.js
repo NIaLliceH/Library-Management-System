@@ -96,7 +96,7 @@ router.get('/:id_user/hold', async (req, res) => {
                     // "bookID": ticket.ID_book, 
                     "title": nameBook, 
                     "author": authors, 
-                    "category": nameData.category,
+                    "category": nameData.category ? nameData.category : "Unknown", 
                     "status": ticket.status, 
                     "createdDate": ticket.day_create, 
                     "expiredDate": ticket.day_expired,

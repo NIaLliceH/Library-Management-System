@@ -112,6 +112,14 @@ router.post('/login', async (req, res) => {
       return res.status(404).json({ message: 'User không tồn tại' });
     }
 
+    // Lấy thông tin người dùng
+    const stu = await Student.findOne({ ID: account._id });
+    if (!stu) {
+      return res.status(404).json({ message: 'Student không tồn tại' });
+    }
+
+    const ban = stu.NoWarning > 3 ? "banned" : "on";
+
 
     let data = {};
 
@@ -122,6 +130,7 @@ router.post('/login', async (req, res) => {
       }
       data = {
         userId: user.ID_user,
+        Status: ban,
         name: user.name,
         avatarUrl: user.avatar ? user.avatar : null ,
         email: user.email,
@@ -138,6 +147,7 @@ router.post('/login', async (req, res) => {
       }
       data = {
         userId: user.ID_user,
+        Status: ban,
         name: user.name,
         avatarUrl: user.avatar ? user.avatar : null,
         email: user.email,
