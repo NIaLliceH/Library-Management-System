@@ -487,7 +487,17 @@ router.get('/most-borrowed', async (req, res) => {
   
       // Tạo một map để tra cứu thông tin sách nhanh hơn
       const bookMap = books.reduce((map, book) => {
-        map[book._id] = book;
+        map[book._id.toString()] = book;
+        return map;
+      }, {});
+  
+      // Lấy danh sách tác giả dựa trên ID_book
+      const authorBooks = await AuthorBook.find({ ID_book: { $in: bookIds } }).lean();
+      const authorMap = authorBooks.reduce((map, authorBook) => {
+        if (!map[authorBook.ID_book.toString()]) {
+          map[authorBook.ID_book.toString()] = [];
+        }
+        map[authorBook.ID_book.toString()].push(authorBook.author);
         return map;
       }, {});
   
@@ -505,10 +515,14 @@ router.get('/most-borrowed', async (req, res) => {
       const mostBorrowedBooks = Object.entries(borrowCountMap)
         .map(([bookId, borrowCount]) => {
           const bookInfo = bookMap[bookId];
+          const authors = authorMap[bookId] || []; // Lấy danh sách tác giả hoặc mảng rỗng nếu không có
           return {
             bookId: bookId,
             name: bookInfo?.name,
             imageUrl: bookInfo?.imageUrl,
+            category: bookInfo?.category,
+            authors, // Danh sách tác giả
+            edition: bookInfo?.edition,
             borrowCount,
           };
         })
@@ -528,6 +542,7 @@ router.get('/most-borrowed', async (req, res) => {
       });
     }
   });
+  
   
 
 module.exports = router;
