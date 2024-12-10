@@ -103,29 +103,27 @@ class SearchResult extends StatelessWidget {
                                     color: kBase3
                                 ),
                               ),
+                              // author
+                              Text(
+                                  Utils.processDisplayValue(books[index].author),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w300)
+                              ),
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  // author and category
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                          Utils.processDisplayValue(books[index].author),
-                                          style: TextStyle(
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w300)
-                                      ),
-                                      Text(
-                                          Utils.processDisplayValue(books[index].category),
-                                          style: TextStyle(
-                                              fontSize: 12,
-                                              fontStyle: FontStyle.italic,
-                                              fontWeight: FontWeight.w300,
-                                              color: kBase3
-                                          )
-                                      ),
-                                    ],
+                                  // category
+                                  Text(
+                                      Utils.processDisplayValue(books[index].category),
+                                      style: TextStyle(
+                                          fontSize: 12,
+                                          fontStyle: FontStyle.italic,
+                                          fontWeight: FontWeight.w300,
+                                          color: kBase3
+                                      )
                                   ),
                                   // available copies
                                   Align(
