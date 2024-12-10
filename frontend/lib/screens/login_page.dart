@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:frontend/api_service.dart';
 import 'package:frontend/auth_service.dart';
 import 'package:frontend/constants.dart';
-import '../globals.dart';
-import '../models/student.dart';
 import '../models/user.dart';
 
 
@@ -15,11 +13,11 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  String _email = 'linh@student.com'; // testing
-  String _password = 'password123';
+  // String _email = 'linh@student.com'; // testing
+  // String _password = 'password123';
 
-  // String _email = '';
-  // String _password = '';
+  String _email = '';
+  String _password = '';
   bool _obscuredText = true;
 
   void _togglePasswordVisibility() {

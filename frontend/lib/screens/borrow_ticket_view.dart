@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:frontend/auth_service.dart';
 import 'package:frontend/models/borrow_ticket.dart';
@@ -106,7 +104,7 @@ class BorrowTicketView extends StatelessWidget {
                               : greenStatus,
                         ),
                         if (!ticket.returned)
-                          // return button
+                        // return button
                           FloatingActionButton.extended(
                             label: Text(
                               'Return Book',
@@ -147,69 +145,67 @@ class BorrowTicketView extends StatelessWidget {
   void _showRateDialog(BuildContext context, BorrowTicket ticket) {
     int rating = 0;
     showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text('Rate Book'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Utils.displayInfo('Title', ticket.bookTitle),
-              Utils.displayInfo('Author', ticket.bookAuthor),
-              Utils.displayInfo('Edition', ticket.bookEdition),
-              Text('Rate this book:'),
-              RatingBar.builder(
-                initialRating: 0,
-                minRating: 1,
-                maxRating: 5,
-                itemBuilder: (context, index) => Icon(
-                  Icons.star,
-                  color: Colors.amber,
-                ),
-                onRatingUpdate: (value) {
-                  rating = value.toInt();
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text('Rate Book'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Utils.displayInfo('Title', ticket.bookTitle),
+                Utils.displayInfo('Author', ticket.bookAuthor),
+                Utils.displayInfo('Edition', ticket.bookEdition),
+                Text('Rate this book:'),
+                RatingBar.builder(
+                  initialRating: 0,
+                  minRating: 1,
+                  maxRating: 5,
+                  itemBuilder: (context, index) => Icon(
+                    Icons.star,
+                    color: Colors.amber,
+                  ),
+                  onRatingUpdate: (value) {
+                    rating = value.toInt();
+                  },
+                )
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  try {
+                    final message = await ApiService.rateBook(ticket.bookId!, userId, rating, ticket.id);
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(message),
+                          backgroundColor: greenStatus,
+                        ),
+                      );
+                      Navigator.pop(context);
+                    }
+                  }
+                  catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Error: $e'),
+                          backgroundColor: redStatus,
+                        ),
+                      );
+                    }
+                  }
                 },
+                child: Text('Submit'),
               )
             ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                try {
-                  final message = await ApiService.rateBook(ticket.bookId!, userId, rating, ticket.id);
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(message),
-                        backgroundColor: greenStatus,
-                      ),
-                    );
-                    Navigator.pop(context);
-                  }
-                }
-                catch (e) {
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Error: $e'),
-                        backgroundColor: redStatus,
-                      ),
-                    );
-                  }
-                }
-              },
-              child: Text('Submit'),
-              // decorate
-
-            )
-          ],
-        );
-      }
+          );
+        }
     );
   }
 

@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:frontend/api_service.dart';
 import 'package:frontend/utils.dart';
 import 'package:frontend/constants.dart';
-import 'package:frontend/models/book.dart';
 
 import '../auth_service.dart';
+import '../models/book.dart';
 
 class BookView extends StatelessWidget {
   // final Book? book;
@@ -52,7 +52,7 @@ class BookView extends StatelessWidget {
               );
             }
             else {
-              final book = snapshot.data!;
+              final Book book = snapshot.data!;
               final isButtonDisabled = !book.canHold!;
               return Stack(
                 children: [

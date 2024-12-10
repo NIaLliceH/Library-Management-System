@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/globals.dart';
 import 'package:frontend/models/borrow_ticket.dart';
 import 'package:intl/intl.dart';
 
 import 'models/book.dart';
 import 'models/hold_ticket.dart';
-import 'models/student.dart';
 
 class Utils {
   static String processDisplayValue(dynamic value) {
