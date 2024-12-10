@@ -40,7 +40,7 @@ class Student extends User {
       dob: json['doB'] ?? 'N/A',
       joinDate: DateTime.parse(json['joinDate']),
       status: json['status'] == 'on' ? true : false,
-      numOfWarning: int.parse(json['noWarning'].toString()),
+      numOfWarning: json['noWarning'] ?? -1,
     );
   }
 
@@ -54,11 +54,11 @@ class Student extends User {
       'role': role,
       'gender': gender,
       'address': address,
-      'joinDate': joinDate,
+      'joinDate': joinDate.toString(),
       'MSSV': mssv,
       'doB': dob,
       'faculty': faculty,
-      'noWarning': numOfWarning.toString(),
+      'noWarning': numOfWarning,
       'status': status,
     };
   }

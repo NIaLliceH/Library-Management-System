@@ -5,11 +5,7 @@ import 'package:frontend/models/hold_ticket.dart';
 import 'package:http/http.dart' as http;
 import 'package:frontend/models/book.dart';
 import 'package:frontend/constants.dart';
-
-import 'globals.dart'p;;
-import 'models/admin.dart';
 import 'models/student.dart';
-import 'models/user.dart';
 
 class ApiService {
   static const String baseUrl = apiUrl;
@@ -19,7 +15,8 @@ class ApiService {
     final response = await http.get(Uri.parse('$baseUrl/books'));
     if (response.statusCode == 200) {
       List<dynamic> data = jsonDecode(response.body)['data'];
-      List<Book> books = data.map<Book>((dynamic item) => Book.fromBasicJson(item)).toList();
+      List<Book> books =
+          data.map<Book>((dynamic item) => Book.fromBasicJson(item)).toList();
       return books;
     } else {
       throw 'Failed to load books';
@@ -28,7 +25,8 @@ class ApiService {
 
   // unused
   static Future<Book> getBookDetails(Book book, String userId) async {
-    final response = await http.get(Uri.parse('$baseUrl/books/${book.id}/$userId'));
+    final response =
+        await http.get(Uri.parse('$baseUrl/books/${book.id}/$userId'));
     if (response.statusCode == 200) {
       dynamic data = jsonDecode(response.body)['data'];
       book.updateDetails(data);
@@ -39,7 +37,8 @@ class ApiService {
   }
 
   static Future<Book> getBookById(String id, String userId) async {
-    final response = await http.get(Uri.parse('$baseUrl/books/$id?userId=$userId'));
+    final response =
+        await http.get(Uri.parse('$baseUrl/books/$id?userId=$userId'));
     if (response.statusCode == 200) {
       dynamic data = jsonDecode(response.body)['data'];
       Book book = Book.fromBasicJson(data);
@@ -55,10 +54,12 @@ class ApiService {
       return getAllBooks();
     }
 
-    final response = await http.get(Uri.parse('$baseUrl/books/category/$category'));
+    final response =
+        await http.get(Uri.parse('$baseUrl/books/category/$category'));
     if (response.statusCode == 200) {
       List<dynamic> data = jsonDecode(response.body)['data'];
-      List<Book> books = data.map<Book>((dynamic item) => Book.fromBasicJson(item)).toList();
+      List<Book> books =
+          data.map<Book>((dynamic item) => Book.fromBasicJson(item)).toList();
       return books;
     } else {
       throw 'Failed to load books';
@@ -66,15 +67,16 @@ class ApiService {
   }
 
   static Future<List<Book>> searchBookByName(String name) async {
-    final response = await http.get(Uri.parse('$baseUrl/books/search?name=$name'));
+    final response =
+        await http.get(Uri.parse('$baseUrl/books/search?name=$name'));
     if (response.statusCode == 200) {
       List<dynamic> data = jsonDecode(response.body)['data'];
-      List<Book> books = data.map((dynamic item) => Book.fromBasicJson(item)).toList();
+      List<Book> books =
+          data.map((dynamic item) => Book.fromBasicJson(item)).toList();
       return books;
     } else if (response.statusCode == 404) {
       throw 'No book found';
-    }
-    else {
+    } else {
       throw 'Failed to load books';
     }
   }
@@ -101,7 +103,8 @@ class ApiService {
 
     if (response.statusCode == 200) {
       List<dynamic> data = jsonDecode(response.body)['data'];
-      List<Book> books = data.map<Book>((dynamic item) => Book.fromBasicJson(item)).toList();
+      List<Book> books =
+          data.map<Book>((dynamic item) => Book.fromBasicJson(item)).toList();
       return books;
     } else {
       throw 'Failed to load books';
@@ -112,7 +115,8 @@ class ApiService {
     final response = await http.get(Uri.parse('$baseUrl/books/categories'));
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body)['data']; // !!! data
-      List<String> categories = data.map<String>((dynamic item) => item.toString()).toList();
+      List<String> categories =
+          data.map<String>((dynamic item) => item.toString()).toList();
       return categories;
     } else {
       throw 'Failed to load categories';
@@ -123,7 +127,8 @@ class ApiService {
     final response = await http.get(Uri.parse('$baseUrl/$userId/hold'));
     if (response.statusCode == 200) {
       List<dynamic> body = jsonDecode(response.body);
-      List<HoldTicket> tickets = body.map((dynamic item) => HoldTicket.fromBasicJson(item)).toList();
+      List<HoldTicket> tickets =
+          body.map((dynamic item) => HoldTicket.fromBasicJson(item)).toList();
       return tickets;
     } else {
       throw 'Failed to load hold tickets';
@@ -143,7 +148,8 @@ class ApiService {
   }
 
   static Future<HoldTicket> getHoldTicketDetails(HoldTicket ticket) async {
-    final response = await http.get(Uri.parse('$baseUrl/hold_infor/${ticket.id}'));
+    final response =
+        await http.get(Uri.parse('$baseUrl/hold_infor/${ticket.id}'));
     if (response.statusCode == 200) {
       ticket.updateDetails(jsonDecode(response.body));
       return ticket;
@@ -152,11 +158,13 @@ class ApiService {
     }
   }
 
-  static Future<List<BorrowTicket>> getBorrowTicketsOfUser(String userId) async {
+  static Future<List<BorrowTicket>> getBorrowTicketsOfUser(
+      String userId) async {
     final response = await http.get(Uri.parse('$baseUrl/$userId/borrow'));
     if (response.statusCode == 200) {
       List<dynamic> body = jsonDecode(response.body);
-      List<BorrowTicket> tickets = body.map((dynamic item) => BorrowTicket.fromBasicJson(item)).toList();
+      List<BorrowTicket> tickets =
+          body.map((dynamic item) => BorrowTicket.fromBasicJson(item)).toList();
       return tickets;
     } else {
       throw 'Failed to load borrow tickets';
@@ -164,7 +172,8 @@ class ApiService {
   }
 
   static Future<BorrowTicket> getBorrowTicketInfo(String ticketId) async {
-    final response = await http.get(Uri.parse('$baseUrl/borrow_infor/$ticketId'));
+    final response =
+        await http.get(Uri.parse('$baseUrl/borrow_infor/$ticketId'));
     if (response.statusCode == 200) {
       dynamic json = jsonDecode(response.body);
       BorrowTicket ticket = BorrowTicket.fromBasicJson(json);
@@ -175,8 +184,10 @@ class ApiService {
     }
   }
 
-  static Future<BorrowTicket> getBorrowTicketDetails(BorrowTicket ticket) async {
-    final response = await http.get(Uri.parse('$baseUrl/borrow_infor/${ticket.id}'));
+  static Future<BorrowTicket> getBorrowTicketDetails(
+      BorrowTicket ticket) async {
+    final response =
+        await http.get(Uri.parse('$baseUrl/borrow_infor/${ticket.id}'));
     if (response.statusCode == 200) {
       ticket.updateDetails(jsonDecode(response.body));
       return ticket;
@@ -208,7 +219,8 @@ class ApiService {
         throw 'Account is banned, please contact the library for more information';
       }
       return student;
-    } else if (response.statusCode == 400) { // !!! should be 401
+    } else if (response.statusCode == 400) {
+      // !!! should be 401
       throw 'Invalid username or password';
     } else {
       throw 'Other status code';
@@ -256,7 +268,8 @@ class ApiService {
     }
   }
 
-  static Future<String> rateBook(String bookId, String userId, int rating) async {
+  static Future<String> rateBook(
+      String bookId, String userId, int rating) async {
     final response = await http.post(
       Uri.parse('$baseUrl/books/$bookId/rate'),
       headers: <String, String>{
