@@ -471,7 +471,7 @@ router.post('/', async (req, res) => {
 // rate book
 router.post('/:id/rate', async (req, res) => {
   try {
-    const { rating } = req.body;
+    const { rating, userID, borrowID } = req.body;
 
     if (![1, 2, 3, 4, 5].includes(rating)) {
       return res.status(400).json({ message: 'Đánh giá không hợp lệ' });
@@ -481,6 +481,30 @@ router.post('/:id/rate', async (req, res) => {
     if (!book) {
       return res.status(404).json({ message: 'Không tìm thấy sách đánh giá' });
     }
+
+    // Kiểm tra sinh viên đã đánh giá chưa
+    const existingRating = await RateBook.findOne({ ID_stu, ID_Boo: req.params.id });
+    if (existingRating) {
+      return res.status(400).json({ message: 'Sinh viên đã đánh giá sách này rồi' });
+    }
+
+    // Kiểm tra BorrowTicket tồn tại và cập nhật trạng thái rated
+    const borrowTicket = await BorrowTicket.findById(borrowID);
+    if (!borrowTicket) {
+      return res.status(404).json({ message: 'Không tìm thấy phiếu mượn' });
+    }
+    if (borrowTicket.rated === '1') {
+      return res.status(400).json({ message: 'Phiếu mượn này đã được đánh giá' });
+    }
+
+    borrowTicket.rated = '1'; // Chuyển trạng thái rated thành '1'
+    await borrowTicket.save();
+    const newRate = new RateBook({
+      ID_stu: userID,
+      ID_Boo: req.params.id,
+      Rating: rating,
+    });
+    await newRate.save();
 
     if (rating === 1) book.Rate.one += 1;
     else if (rating === 2) book.Rate.two += 1;

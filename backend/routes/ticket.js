@@ -246,6 +246,7 @@ router.get('/:id_user/borrow', async (req, res) => {
                 // Lấy thông tin sách
                 const nameData = id_book ? await Book.findOne({ _id: id_book }) : null;
                 const nameBook = nameData ? nameData.name : 'Unknown';
+                const cate = nameData ? nameData.category : 'Unknown';
 
                 const returnedDate = ticket.returnedDate || "Not Yet";
 
@@ -258,7 +259,8 @@ router.get('/:id_user/borrow', async (req, res) => {
                     expiredDate: ticket.return_day,
                     returnedDate: returnedDate,
                     status: ticket.status,
-                    dayLeft: daysLeft
+                    dayLeft: daysLeft,
+                    category: cate
                 };
                 return data;
             })
@@ -355,6 +357,8 @@ router.post('/:id_user/hold', async (req, res) => {
             });
         }
 
+        
+
         // Lưu vào database
         const savedTicket = await newHoldTicket.save();
 
@@ -426,6 +430,9 @@ router.post('/:id_user/borrow', async (req, res) => {
         const data_COuntborrow = await Book.findOne( {_id: ID_book} );
         data_COuntborrow.borrowCount = data_COuntborrow.borrowCount + 1;
         await data_COuntborrow.save();
+
+        dataBook.status = 'borrowed';
+        await dataBook.save();
 
         res.status(201).json({ message: 'Tạo thẻ mượn sách thành công', data: savedTicket });
     } catch (err) {
@@ -499,7 +506,7 @@ router.get('/most-borrowed', async (req, res) => {
         .map(([bookId, borrowCount]) => {
           const bookInfo = bookMap[bookId];
           return {
-            _id: bookId,
+            bookId: bookId,
             name: bookInfo?.name,
             imageUrl: bookInfo?.imageUrl,
             borrowCount,
