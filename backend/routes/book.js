@@ -381,6 +381,7 @@ router.get('/:id', async (req, res) => {
     const response = {
       bookId: book._id,
       name: book.name,
+      imageUrl: book.imageUrl,
       authors: authors.map(a => a.author), // Danh sách tác giả
       category: book.category || null,
       publisher: book.Publisher || null,
