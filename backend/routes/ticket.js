@@ -464,6 +464,44 @@ router.post('/cancel/:ticketID', async (req, res) => {
     }
 });
 
+// API trả sách
+router.post('/returnedBook/:borrowID', async (req, res) => {
+    try {
+        const { borrowID } = req.params; // ID của ticketHold
+  
+      const dateNow = new Date();
+  
+      // Tìm BorrowTicket dựa trên ticketID
+      const borrowTick = await borrowTicket.findOne({ _id: borrowID });
+      if (!borrowTick) {
+        return res.status(404).json({ message: 'Không tìm thấy BorrowTicket' });
+      }
+  
+      // Kiểm tra trạng thái BorrowTicket
+      if (borrowTick.status !== 'borrowing') {
+        return res.status(400).json({ message: 'Sách đã được trả hoặc không ở trạng thái mượn' });
+      }
+  
+      // Cập nhật trạng thái BorrowTicket
+      borrowTick.status = 'returned';
+      borrowTick.returnedDate = dateNow;
+      await borrowTick.save();
+  
+      // Tìm bản sao sách (CopyBook) và cập nhật trạng thái thành 'available'
+      const copyBook = await CopyBook.findOne({ _id: borrowTicket.ID_copy });
+      if (copyBook) {
+        copyBook.status = 'available';
+        await copyBook.save();
+      }
+  
+      res.status(200).json({ message: 'Trả sách thành công' });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: 'Có lỗi xảy ra', error: err.message });
+    }
+  });
+  
+
 
 router.get('/most-borrowed', async (req, res) => {
     try {
@@ -487,7 +525,17 @@ router.get('/most-borrowed', async (req, res) => {
   
       // Tạo một map để tra cứu thông tin sách nhanh hơn
       const bookMap = books.reduce((map, book) => {
-        map[book._id] = book;
+        map[book._id.toString()] = book;
+        return map;
+      }, {});
+  
+      // Lấy danh sách tác giả dựa trên ID_book
+      const authorBooks = await AuthorBook.find({ ID_book: { $in: bookIds } }).lean();
+      const authorMap = authorBooks.reduce((map, authorBook) => {
+        if (!map[authorBook.ID_book.toString()]) {
+          map[authorBook.ID_book.toString()] = [];
+        }
+        map[authorBook.ID_book.toString()].push(authorBook.author);
         return map;
       }, {});
   
@@ -505,10 +553,14 @@ router.get('/most-borrowed', async (req, res) => {
       const mostBorrowedBooks = Object.entries(borrowCountMap)
         .map(([bookId, borrowCount]) => {
           const bookInfo = bookMap[bookId];
+          const authors = authorMap[bookId] || []; // Lấy danh sách tác giả hoặc mảng rỗng nếu không có
           return {
             bookId: bookId,
             name: bookInfo?.name,
             imageUrl: bookInfo?.imageUrl,
+            category: bookInfo?.category,
+            authors, // Danh sách tác giả
+            edition: bookInfo?.edition,
             borrowCount,
           };
         })
@@ -528,6 +580,7 @@ router.get('/most-borrowed', async (req, res) => {
       });
     }
   });
+  
   
 
 module.exports = router;
