@@ -35,6 +35,8 @@ router.get('/hold', async (req, res) => {
                 const nameData = await Book.findOne({ _id: ticket.ID_book });
 
                 const nameBook = nameData ? nameData.name : 'Unknown';
+                const nameCate = nameData ? nameData.category : 'Unknown';
+
                 //const urlBook = nameData ? nameData.imageUrl : 'Unknown';
 
                 data = {
@@ -42,7 +44,7 @@ router.get('/hold', async (req, res) => {
                     // "bookID": ticket.ID_book, 
                     "title": nameBook, 
                     "author": authors, 
-                    "category": nameData.category, 
+                    "category": nameCate, 
                     "status": ticket.status, 
                     "createdDate": ticket.day_create, 
                     "expiredDate": ticket.day_expired,
@@ -89,6 +91,7 @@ router.get('/:id_user/hold', async (req, res) => {
                 const nameData = await Book.findOne({ _id: ticket.ID_book });
 
                 const nameBook = nameData ? nameData.name : 'Unknown';
+                const nameCate = nameData ? nameData.category : 'Unknown';
                 //const urlBook = nameData ? nameData.imageUrl : 'Unknown';
 
                 data = {
@@ -96,7 +99,7 @@ router.get('/:id_user/hold', async (req, res) => {
                     // "bookID": ticket.ID_book, 
                     "title": nameBook, 
                     "author": authors, 
-                    "category": nameData.category ? nameData.category : "Unknown", 
+                    "category": nameCate, 
                     "status": ticket.status, 
                     "createdDate": ticket.day_create, 
                     "expiredDate": ticket.day_expired,
