@@ -417,71 +417,74 @@ router.get('/:id', async (req, res) => {
 // POST route to add a new book
 // POST route to add a new book
 router.post('/', async (req, res) => {
-  try {
-    const {
-      name,
-      noValidCopies,
-      noPages,
-      publisher,
-      description,
-      imageUrl,
-      copies,
-      category,
-      authors,
-    } = req.body;
-
-    // Kiểm tra các trường bắt buộc
-    if (!name || !category) {
-      return res.status(400).json({ message: 'Vui lòng cung cấp tên sách và thể loại.' });
+    try {
+      const {
+        name,
+        NoValidCopies,
+        NoPages,
+        Publisher,
+        Description,
+        imageUrl,
+        copies,
+        category,
+        authors,
+      } = req.body;
+  
+      // Kiểm tra các trường bắt buộc
+      if (!name || !category) {
+        return res.status(400).json({ message: 'Vui lòng cung cấp tên sách và thể loại.' });
+      }
+  
+      // Tạo sách mới
+      const newBook = new Book({
+        name,
+        NoValidCopies: NoValidCopies || 0,
+        NoPages: NoPages || 0,
+        Publisher: Publisher || "Unknown Publisher",
+        Description: Description || "No description available",
+        imageUrl: imageUrl || null,
+        category,
+      });
+  
+      // Lưu thông tin sách
+      const savedBook = await newBook.save();
+  
+      // Xử lý danh sách bản sao (copies) nếu có
+      let savedCopies = [];
+      if (copies && Array.isArray(copies)) {
+        const copyBooks = copies.map(copy => ({
+          ID_book: savedBook._id,
+          shell: copy.shell || "Default Shell",
+          status: copy.status || "available",
+          publish_date: copy.publish_date || new Date().toISOString(),
+          edition: copy.edition || "1st edition",
+        }));
+        savedCopies = await CopyBook.insertMany(copyBooks);
+      }
+  
+      // Xử lý danh sách tác giả (authors) nếu có
+      let savedAuthors = [];
+      if (authors && Array.isArray(authors)) {
+        const authorDocs = authors.map(author => ({
+          ID_book: savedBook._id,
+          author,
+        }));
+        savedAuthors = await AuthorBook.insertMany(authorDocs);
+      }
+  
+      res.status(201).json({
+        message: 'Success',
+        data: {
+          book: savedBook,
+          copies: savedCopies,
+          authors: savedAuthors,
+        },
+      });
+    } catch (error) {
+      res.status(500).json({ message: 'Lỗi khi thêm thông tin sách', error });
     }
-
-    // Tạo sách mới
-    const newBook = new Book({
-      name,
-      noValidCopies: noValidCopies || 0,
-      nameoPages: noPages || 0,
-      publisher: publisher || "Unknown Publisher",
-      description: description || "No description available",
-      imageUrl: imageUrl || null,
-      category,
-    });
-
-    // Lưu thông tin sách
-    const savedBook = await newBook.save();
-
-    // Xử lý danh sách bản sao (copies) nếu có
-    let savedCopies = [];
-    if (copies && Array.isArray(copies)) {
-      const copyBooks = copies.map(copy => ({
-        ID_book: savedBook._id,
-        shell: copy.shell || "Default Shell",
-        status: copy.status || "available",
-      }));
-      savedCopies = await CopyBook.insertMany(copyBooks);
-    }
-
-    // Xử lý danh sách tác giả (authors) nếu có
-    let savedAuthors = [];
-    if (authors && Array.isArray(authors)) {
-      const authorDocs = authors.map(author => ({
-        ID_book: savedBook._id,
-        author,
-      }));
-      savedAuthors = await AuthorBook.insertMany(authorDocs);
-    }
-
-    res.status(201).json({
-      message: 'Success',
-      data: {
-        book: savedBook,
-        copies: savedCopies,
-        authors: savedAuthors,
-      },
-    });
-  } catch (error) {
-    res.status(500).json({ message: 'Lỗi khi thêm thông tin sách', error });
-  }
-});
+  });
+  
 
 // rate book
 router.post('/:id/rate', async (req, res) => {
