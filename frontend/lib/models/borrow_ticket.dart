@@ -1,3 +1,5 @@
+import 'package:intl/intl.dart';
+
 class BorrowTicket {
   final String id;
   final String bookTitle;
@@ -47,7 +49,12 @@ class BorrowTicket {
     bookImageUrl = json['imageUrl'] ?? 'https://drive.google.com/uc?export=view&id=1oxjzdaMKjybjbwoduSXd9mGGJDPTcJD6'; // placeholder image
     bookEdition = json['edition'] ?? 'N/A';
     if (returned) {
-      returnedDate = DateTime.parse(json['returnedDate']);
+      // returnedDate = DateTime.parse(json['returnedDate']);
+      // canceledDate = DateTime.parse(json['canceledDate']);
+      String dateStr = json['returnedDate'].toString();
+      DateFormat format = DateFormat("EEE MMM dd yyyy HH:mm:ss 'GMT'Z");
+      dateStr = dateStr.replaceAll(RegExp(r'\(.*?\)'), '').trim();
+      returnedDate = format.parse(dateStr);
     }
     hasRated = json['hasRated'].toString() == '1' ? true : false;
   }

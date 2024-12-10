@@ -1,7 +1,10 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:frontend/auth_service.dart';
 import 'package:frontend/models/borrow_ticket.dart';
 import 'package:frontend/screens/book_view.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import '../api_service.dart';
 import '../constants.dart';
 import '../utils.dart';
@@ -102,21 +105,34 @@ class BorrowTicketView extends StatelessWidget {
                           Colors.grey
                               : greenStatus,
                         ),
-                        // view book button
-                        FloatingActionButton.extended(
-                          label: Text('View Book', style: TextStyle(
-                            color: Colors.white,
-                          )),
-                          backgroundColor: kBase3,
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => BookView(bookId: ticket.bookId!),
+                        if (!ticket.returned)
+                          // return button
+                          FloatingActionButton.extended(
+                            label: Text(
+                              'Return Book',
+                              style: TextStyle(
+                                color: Colors.white,
                               ),
-                            );
-                          },
-                        ),
+                            ),
+                            backgroundColor: kBase3,
+                            onPressed: () => _showReturnDialog(context, ticket.id),
+                          )
+                        else
+                        // view book button
+                          FloatingActionButton.extended(
+                            label: Text('View Book', style: TextStyle(
+                              color: Colors.white,
+                            )),
+                            backgroundColor: kBase3,
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => BookView(bookId: ticket.bookId!),
+                                ),
+                              );
+                            },
+                          ),
                       ],
                     ),
                   )
@@ -192,6 +208,36 @@ class BorrowTicketView extends StatelessWidget {
           ],
         );
       }
+    );
+  }
+
+  void _showReturnDialog(BuildContext context, String ticketId) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Return QR'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min, // Adjust to fit content only
+            children: [
+              SizedBox(
+                width: 200,
+                height: 200,
+                child: QrImageView(
+                  data: ticketId,
+                  version: QrVersions.auto,
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('Close'),
+            ),
+          ],
+        );
+      },
     );
   }
 }
