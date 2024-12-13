@@ -1,0 +1,12 @@
+.wrapper {
+    display: flex; /* Arrange sidebar and content side by side */
+    height: 100vh; /* Full viewport height */
+    overflow: hidden; /* Prevent scrolling if content overflows */
+}
+
+.content {
+    flex-grow: 1; /* Allow the content area to take up remaining space */
+    padding: 20px; /* Adjust padding to your preference */
+    background-color: #eafaff; 
+    overflow-y: auto; /* Enable vertical scrolling for long content */
+}
