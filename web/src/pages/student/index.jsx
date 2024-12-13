@@ -128,7 +128,7 @@ const Student = () => {
                     {student.numBorrow}
                   </button>
                 </td>
-                <td style={{backgroundColor}}>{student.accountStatus == 'on' ? 'active': 'banned'}</td>
+                <td >{student.accountStatus == 'on' ? 'active': 'banned'}</td>
               </tr>
             ))}
           </tbody>
