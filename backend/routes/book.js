@@ -378,7 +378,25 @@ router.get('/:id', async (req, res) => {
           canHold = false;
         }
       }
-  
+      // Tính avgRating 
+      let avgRating = 0;
+      if (book.Rate) {
+        const totalRatings = 
+          (book.Rate.one || 0) + 
+          (book.Rate.two || 0) + 
+          (book.Rate.three || 0) + 
+          (book.Rate.four || 0) + 
+          (book.Rate.five || 0);
+
+        const totalScore = 
+          (book.Rate.one || 0) * 1 + 
+          (book.Rate.two || 0) * 2 + 
+          (book.Rate.three || 0) * 3 + 
+          (book.Rate.four || 0) * 4 + 
+          (book.Rate.five || 0) * 5;
+
+        avgRating = totalRatings > 0 ? (totalScore / totalRatings).toFixed(1) : 0;
+      }
       // Chuẩn bị đối tượng phản hồi
       const response = {
         bookId: book._id,
@@ -390,7 +408,7 @@ router.get('/:id', async (req, res) => {
         noCopies: totalCopies,
         noAvaiCopies: availableCopies,
         noPages: book.NoPages || null,
-        avgRating: book.avgRate || null,
+        avgRating: avgRating || null,
         description: book.Description || null,
         edition: book.edition || null,
         publishDate: book.datePublish || null,
@@ -487,7 +505,6 @@ router.post('/', async (req, res) => {
   });
   
 
-// rate book
 // rate book
 router.post('/:id/rate', async (req, res) => {
   try {
