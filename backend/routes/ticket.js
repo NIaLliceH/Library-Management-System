@@ -190,6 +190,7 @@ router.get('/borrow', async (req, res) => {
                 const nameBook = nameData ? nameData.name : 'Unknown';
 
                 const returnedDate = ticket.returnedDate ? ticket.returnedDate : "Not Yet";
+                const hmm = ticket.ID_student ? ticket.ID_student : "Not yet";
 
                 const data = {
                     borrowTicket_ID: ticket._id,
@@ -199,7 +200,10 @@ router.get('/borrow', async (req, res) => {
                     expiredDate: ticket.return_day,
                     returnedDate: returnedDate,
                     status: ticket.status,
-                    dayLeft: daysLeft
+                    dayLeft: daysLeft,
+                    ID_book: id_book,
+                    ID_student: hmm
+
                 };
                 return data;
             })
