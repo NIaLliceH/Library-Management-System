@@ -46,25 +46,25 @@ Login credentials: `admin@admin.com` - `password123`
 ## Screenshots
 
 - Login screen
-![login screen](./img/login.jpg)
+<img src="./img/login.jpg" alt="login screen" height="600">
 
 - Home screen
-![home screen](./img/home.jpg)
+<img src="./img/home.jpg" alt="home screen" height="600">
 
 - Book view
-![book view screen](./img/bookview.jpg)
+<img src="./img/bookview.jpg" alt="book view" height="600">
 
 - Hold ticket
-![hold ticket](./img/hold.jpg)
+<img src="./img/hold.jpg" alt="hold ticket" height="600">
 
 - Ticket list screen
-![ticket list screen](./img/ticket.jpg)
+<img src="./img/ticket.jpg" alt="ticket list screen" height="600">
 
 - Borrow ticket view
-![borrow ticket view](./img/borrow.jpg)
+<img src="./img/borrow.jpg" alt="borrow ticket view" height="600">
 
 - Profile screen
-![profile screen](./img/profile.jpg)
+<img src="./img/profile.jpg" alt="profile screen" height="600">
 
 ---
 That's all! Happy coding!
