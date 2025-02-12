@@ -46,25 +46,25 @@ Login credentials: `admin@admin.com` - `password123`
 ## Screenshots
 
 - Login screen
-![login screen](./img/login.png)
+![login screen](./img/login.jpg)
 
 - Home screen
-![home screen](./img/home.png)
+![home screen](./img/home.jpg)
 
 - Book view
-![book view screen](./img/bookview.png)
+![book view screen](./img/bookview.jpg)
 
 - Hold ticket
-![hold ticket](./img/hold.png)
+![hold ticket](./img/hold.jpg)
 
 - Ticket list screen
-![ticket list screen](./img/ticket.png)
+![ticket list screen](./img/ticket.jpg)
 
 - Borrow ticket view
-![borrow ticket view](./img/borrow.png)
+![borrow ticket view](./img/borrow.jpg)
 
 - Profile screen
-![profile screen](./img/profile.png)
+![profile screen](./img/profile.jpg)
 
 ---
 That's all! Happy coding!
